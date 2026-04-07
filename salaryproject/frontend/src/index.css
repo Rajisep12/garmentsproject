@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
+@layer components {
+  .input {
+    @apply w-full mt-1 p-2 border rounded-lg text-sm focus:ring-2 focus:ring-red-500;
+  }
+}

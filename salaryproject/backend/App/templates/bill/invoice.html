@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Invoice</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body {
+      font-family: Arial;
+      font-size: 12px;
+    }
+
+    .invoice {
+      width: 900px;
+      margin: auto;
+      border: 1px solid black;
+      padding: 10px;
+    }
+
+    h2, h3, p {
+      margin: 2px;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    .half {
+      width: 50%;
+      padding: 5px;
+      border: 1px solid black;
+      box-sizing: border-box;
+    }
+
+    .box {
+      border: 1px solid black;
+      padding: 5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid black;
+      padding: 5px;
+      text-align: left;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .no-border td {
+      border: none;
+    }
+
+  </style>
+
+<script>
+  function downloadPDF() {
+    const element = document.getElementById("invoice");
+
+    const opt = {
+      margin: 5,
+      filename: 'invoice.pdf',
+      image: { type: 'jpeg', quality: 1 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+  }
+</script>
+
+</head>
+
+<body>
+
+<div class="invoice">
+
+  <!-- TITLE -->
+  <h2 class="center">TAX INVOICE CUM DELIVERY CHALLAN</h2>
+
+  <!-- COMPANY -->
+  <div class="flex">
+    <div class="half">
+    <h3>HAYATI GARMENTS</h3>
+    <p>11/4 Senngunthapuram,</p>
+    <p>Mangalam Road, Tiruppur - 641604</p>
+    <p>GSTIN: 33FBHPS6742G1ZD</p>
+    <p>State Name : Tamilnadu , Code :33</p>
+    <p>Contact : 9944356661 </p>
+    <p>Email : soundharraj2512@gmail.com</p>
+    </div>
+    <div class="half">
+    <table>
+    <tr><td>Invoice No</td><td>ORD001</td></tr>
+    <tr><td>Buyer's Order No</td><td>BUY001</td></tr>
+    <tr><td>Date</td><td>01-04-2026</td></tr>
+    <tr><td>Dispatch through</td><td>Direct</td></tr>
+    <tr><td>Designation</td><td>Tirupur</td></tr>
+    </table>
+    </div>
+
+  </div>
+
+  <!-- CONSIGNEE + BUYER -->
+  <div class="flex">
+    <div class="half">
+      <b>Consignee (Ship To)</b>
+      <p>HAYATI GARMENTS</p>
+      <p>Mangalam Road, Tiruppur</p>
+      <p>GSTIN: 33FBHPS6742G1ZD</p>
+    </div>
+
+    <div class="half">
+      <b>Buyer (Bill To)</b>
+      <p>HAYATI GARMENTS</p>
+      <p>Mangalam Road, Tiruppur</p>
+      <p>GSTIN: 33FBHPS6742G1ZD</p>
+    </div>
+  </div>
+
+  <!-- ITEMS TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Description</th>
+        <th>HSN</th>
+        <th>Qty</th>
+        <th>Rate</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>LOOPKNIT 240 GSM BIO FABRIC</td>
+        <td>60062200</td>
+        <td>3.000 KGS</td>
+        <td>421.00</td>
+        <td>1263.00</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- TAX + TOTAL -->
+  <table>
+    <tr>
+      <td class="right">CGST @ 2.5%</td>
+      <td class="right">31.58</td>
+    </tr>
+    <tr>
+      <td class="right">SGST @ 2.5%</td>
+      <td class="right">31.58</td>
+    </tr>
+    <tr>
+      <td class="right"><b>Total</b></td>
+      <td class="right"><b>1326.00</b></td>
+    </tr>
+  </table>
+
+  <!-- AMOUNT IN WORDS -->
+  <div class="box">
+    Amount in Words: INR One Thousand Three Hundred Twenty Six Only
+  </div>
+
+  <!-- BANK DETAILS -->
+  <div class="box">
+    <b>Bank Details</b><br>
+    Bank: ICICI Bank<br>
+    A/C No: 615405503308<br>
+    IFSC: ICIC0002538
+  </div>
+
+  <!-- DECLARATION -->
+  <div class="box">
+    <b>Declaration</b><br>
+    We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.
+01.We are responsible for our fabric at roll stage only. If any fault is noted in fabric, pls inform before cutting  otherwise we do 
+not hold ourselves responsible. Our responsibility ceases when the fabric is processed or cutting is made. Check the fabric 
+quality, GSM, LOT number & shades before cutting the fabric.
+02.Our responsibility ceases absolutely as soon the goods leave our premises, after the acceptance of buyer or the carriers, 
+no claim for damage or shortage.
+03. E.&O.E
+  </div>
+
+  <!-- SIGNATURE -->
+  <div class="flex">
+    <div class="half">
+      Customer Signature
+    </div>
+    <div class="half right">
+      Authorised Signatory
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <p class="center">This is a Computer Generated Invoice</p>
+
+</div>
+
+</body>
+</html>
