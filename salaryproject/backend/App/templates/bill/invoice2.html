@@ -1,0 +1,577 @@
+{% load invoice_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Hayati Garments – Tax Invoice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* @page rule for WeasyPrint PDF output */
+        @page {
+            size: A4;
+            margin: 6mm 8mm;
+        }
+
+        .page {
+            border: 1.5px solid #000;
+            /* outer border around entire page */
+            padding: 0;
+            /* remove padding — let inner sections handle their own */
+        }
+
+        body {
+            background: #fff;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            color: #000;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 4px;
+            margin-bottom: 0;
+        }
+
+        /* Replace flexbox with table layout for WeasyPrint/xhtml2pdf compatibility */
+        .header-top {
+            display: table;
+            width: 100%;
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 3px 0 2px;
+        }
+
+        .header-top-left,
+        .header-top-center,
+        .header-top-right {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .header-top-left {
+            text-align: left;
+            width: 33%;
+        }
+
+        .header-top-center {
+            text-align: center;
+            width: 34%;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .header-top-right {
+            text-align: right;
+            width: 33%;
+        }
+
+        .company-name {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            line-height: 1.1;
+            text-transform: uppercase;
+        }
+
+        .company-address {
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .company-email {
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* ── TABLES (general) ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td,
+        th {
+            border: 1.2px solid #000;
+            padding: 3px 5px;
+            vertical-align: middle;
+        }
+
+        /* ── META INFO ── */
+        .meta-table td {
+            font-size: 10.5px;
+            font-weight: 700;
+        }
+
+        .meta-label {
+            font-weight: 700;
+            white-space: nowrap;
+            width: 25%;
+        }
+
+        .meta-value {
+            width: 25%;
+        }
+
+        /* ── PARTY SECTION ── */
+        .party-header th {
+            text-align: center;
+            font-weight: 700;
+            font-size: 11px;
+            background-color: #f0f0f0;
+        }
+
+        .party-table td {
+            font-size: 10.5px;
+            font-weight: 700;
+        }
+
+        .party-name-row td {
+            height: 36px;
+            vertical-align: top;
+            padding-top: 4px;
+        }
+
+        /* ── GOODS TABLE ── */
+        .goods-header th {
+            text-align: center;
+            font-weight: 700;
+            font-size: 10.5px;
+            background-color: #f0f0f0;
+            padding: 4px 3px;
+        }
+
+        .goods-row td {
+            height: 20px;
+            font-size: 10.5px;
+            border-top: none;
+            border-bottom: none;
+        }
+
+        .total-row td {
+            font-weight: 900;
+            font-size: 11px;
+            border-top: 1.2px solid #000;
+        }
+
+        /* ── BOTTOM SECTION ── */
+        .bottom-table td {
+            font-size: 10px;
+            vertical-align: top;
+        }
+
+        .words-cell {
+            width: 44%;
+            padding: 5px;
+        }
+
+        .tax-label {
+            font-weight: 700;
+            font-size: 10px;
+            width: 40%;
+        }
+
+        .tax-value {
+            width: 16%;
+            font-size: 10px;
+        }
+
+        .bank-section {
+            padding: 5px;
+        }
+
+        .bank-section h4 {
+            font-size: 12px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        /* Use table layout for aligned bank details */
+        .bank-detail-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .bank-detail-table td {
+            border: none;
+            padding: 1px 2px;
+            font-size: 10.5px;
+            font-weight: 700;
+            line-height: 1.7;
+        }
+
+        .bank-key {
+            white-space: nowrap;
+            width: 80px;
+        }
+
+        .bank-sep {
+            width: 10px;
+        }
+
+        .bank-val {}
+
+        .terms-cell {
+            padding: 5px;
+        }
+
+        .terms-cell h4 {
+            font-size: 11px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .signatory-cell {
+            text-align: center;
+            font-weight: 700;
+            font-size: 10.5px;
+            padding: 5px;
+        }
+
+        .signatory-cell .for-text {
+            font-size: 11px;
+            font-weight: 900;
+            margin-top: 4px;
+        }
+
+        .signatory-cell .auth-text {
+            margin-top: 30px;
+            font-weight: 700;
+        }
+
+        .declaration {
+            padding: 5px;
+        }
+
+        .declaration span {
+            font-weight: 900;
+            font-size: 10.5px;
+            text-decoration: underline;
+        }
+
+        .declaration p {
+            font-size: 9.5px;
+            margin-top: 2px;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-weight: 900;
+            font-size: 11px;
+            padding: 4px;
+            letter-spacing: 0.5px;
+            border-top: 1.2px solid #000;
+            margin-top: 0;
+        }
+
+        .eo-cell {
+            text-align: right;
+            font-weight: 700;
+            font-size: 10px;
+            padding: 2px 5px;
+        }
+
+        /* Print button hidden in PDF */
+        .print-btn {
+            display: none;
+        }
+
+        /* Browser preview styles */
+        @media screen {
+            body {
+                background: #d0d0d0;
+            }
+
+            .page {
+                width: 210mm;
+                min-height: 297mm;
+                margin: 20px auto;
+                background: #fff;
+                padding: 6mm 8mm;
+                border: 2px solid #000;
+            }
+
+            .print-btn {
+                display: block;
+                margin: 10px auto;
+                padding: 8px 30px;
+                background: #222;
+                color: #fff;
+                border: none;
+                border-radius: 4px;
+                font-size: 14px;
+                cursor: pointer;
+            }
+
+            .print-btn:hover {
+                background: #444;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+
+    <div class="page">
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-top">
+                <span class="header-top-left">GSTIN : 33FBHPS6742G1ZD</span>
+                <span class="header-top-center">TAX INVOICE</span>
+                <span class="header-top-right">Cell : 99443 56661</span>
+            </div>
+            <div class="company-name">Hayati Garments</div>
+            <div class="company-address">11/4, Sengundhapuram, 5th Street, Mangalam Road, Tirupur – 641 604.</div>
+            <div class="company-email">Email: Hayatigarments@gmail.com</div>
+        </div>
+
+        <!-- META INFO -->
+        <table class="meta-table" style="margin-top:0;">
+            <tr>
+                <td class="meta-label">Invoice No:</td>
+                <td class="meta-value">{{ invoice.invoice_no|default:"" }}</td>
+                <td class="meta-label">Transport Mode:</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="meta-label">Invoice Date:</td>
+                <td>{{ invoice.invoice_date|date:"d-m-Y"|default:"" }}</td>
+                <td class="meta-label">Vehicle Number:</td>
+                <td>{{ invoice.transport_vehicle|default:"" }}</td>
+            </tr>
+            <tr>
+                <td class="meta-label">Reverse Charge (Y/N):</td>
+                <td>N</td>
+                <td class="meta-label">Date of Supply:</td>
+                <td>{{ invoice.supply_date|date:"d-m-Y"|default:"" }}</td>
+            </tr>
+            <tr>
+                <td class="meta-label">State: Tamil Nadu</td>
+                <td style="font-weight:700;">Code &nbsp;&nbsp;&nbsp; 33</td>
+                <td class="meta-label">Place of Supply:</td>
+                <td>{{ invoice.place|default:"" }}</td>
+            </tr>
+        </table>
+
+        <!-- BILL TO / SHIP TO -->
+        <table>
+            <tr class="party-header">
+                <th style="width:50%;">Bill to Party</th>
+                <th style="width:50%;">Ship to Party</th>
+            </tr>
+            <tr class="party-table">
+                <td style="font-weight:700;">NAME: {{ invoice.customer.name|default:"" }}</td>
+                <td style="font-weight:700;">NAME: {{ invoice.customer.name|default:"" }}</td>
+            </tr>
+            <tr class="party-table party-name-row">
+                <td>{{ invoice.customer.street_address|default:"" }}{{ invoice.customer.city|default:"" }}</td>
+                <td>{{ invoice.customer.street_address|default:"" }}{{ invoice.customer.city|default:"" }}</td>
+            </tr>
+            <tr class="party-table">
+                <td>Cell: </td>
+                <td>Cell: </td>
+            </tr>
+            <tr class="party-table">
+                <td>GSTIN: {{ invoice.customer.gst|default:"" }}</td>
+                <td>GSTIN: {{ invoice.customer.gst|default:"" }}</td>
+            </tr>
+            <tr class="party-table">
+                <td>State: Tamil Nadu &nbsp; Code: 33</td>
+                <td>State: Tamil Nadu &nbsp; Code: 33 </td>
+                <!-- <td>State: {{ invoice.customer.state|default:"Tamil Nadu" }} &nbsp; Code: {{
+                    invoice.bill_state_code|default:"33" }}</td>
+                <td>State: {{ invoice.customer.state|default:"Tamil Nadu" }} &nbsp; Code: {{
+                    invoice.ship_state_code|default:"33" }}</td> -->
+            </tr>
+        </table>
+
+        <!-- GOODS TABLE -->
+        <table>
+            <thead>
+                <tr class="goods-header">
+                    <th style="width:4%;">S.<br>No.</th>
+                    <th style="width:28%;">Description of Goods</th>
+                    <th style="width:10%;">HSN/SAC</th>
+                    <th style="width:6%;">Qty</th>
+                    <th style="width:10%;">Rate</th>
+                    <th style="width:17%;">Amount</th>
+                    <th style="width:12%;">Discount</th>
+                    <th style="width:13%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in invoice.TblBillitems_bill.all %}
+                <tr class="goods-row">
+                    <td style="text-align:center;">{{ forloop.counter }}</td>
+                    <td>{{ item.product|default:"" }}</td>
+                    <td style="text-align:center;">{{ item.hsn|default:"" }}</td>
+                    <td style="text-align:center;">{{ item.qty|default:""|indian_currency }}</td>
+                    <td style="text-align:right;">{{ item.rate|default:"" }}</td>
+                    <td style="text-align:right;">{{ item.amt|default:""|indian_currency }}</td>
+                    <td style="text-align:right;">{{ item.discount|default:"-" }}</td>
+                    <td style="text-align:right;">{{ item.total_amt|default:""|indian_currency }}</td>
+                </tr>
+                {% empty %}
+                <tr class="goods-row">
+                    <td colspan="8" style="text-align:center;">No items</td>
+                </tr>
+                {% endfor %}
+
+                <!-- Blank filler rows (14 rows to fill page) -->
+                {% with item_count=invoice.TblBillitems_bill.count %}
+                {% for i in "12345678901234"|make_list %}
+                {% if forloop.counter > item_count %}
+                <tr class="goods-row">
+                    <td>&nbsp;</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                {% endwith %}
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="2" style="text-align:left;"><strong>Total</strong></td>
+                    <td></td>
+                    <td style="text-align:center;">
+                        <strong>{{ invoice.TblBillitems_bill.all|sum_qty|indian_currency  }}</strong>
+                    </td>
+                    <td></td>
+                    <td style="text-align:right;">
+                        <strong>{{ invoice.TblBillitems_bill.all|sum_amt|indian_currency }}</strong>
+                    </td>
+                    <td style="text-align:right;">
+                        <strong>{{ invoice.TblBillitems_bill.all|sum_discount }}</strong>
+                    </td>
+                    <td style="text-align:right;">
+                        <strong>{{ invoice.total_amt|indian_currency }}</strong>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- BOTTOM: WORDS + TAX SUMMARY -->
+        <table class="bottom-table">
+            <tr>
+                <td class="words-cell" rowspan="2">
+                    <span style="font-weight:700; font-size:10.5px;">Total Invoice Amount In Words</span><br><br>
+                    {{ invoice.total_gst|round_total|amount_in_words }}
+                </td>
+                <td class="tax-label">Total amount before Tax</td>
+                <td class="tax-value">{{ invoice.total_amt|indian_currency }}</td>
+            </tr>
+            <tr>
+                <td class="tax-label">CGST </td>
+                <td class="tax-value">{{ invoice.cgst_amt }}</td>
+            </tr>
+            <tr>
+                <td rowspan="5" style="vertical-align:top; padding:0;">
+                    <div class="bank-section">
+                        <h4>Bank Details</h4>
+                        <table class="bank-detail-table">
+                            <tr>
+                                <td class="bank-key">Bank</td>
+                                <td class="bank-sep">:</td>
+                                <td class="bank-val">City Union Bank</td>
+                            </tr>
+                            <tr>
+                                <td class="bank-key">Account No</td>
+                                <td class="bank-sep">:</td>
+                                <td class="bank-val">510909010241490</td>
+                            </tr>
+                            <tr>
+                                <td class="bank-key">IFSC CODE</td>
+                                <td class="bank-sep">:</td>
+                                <td class="bank-val">CIUB0000066</td>
+                            </tr>
+                            <tr>
+                                <td class="bank-key">Branch</td>
+                                <td class="bank-sep">:</td>
+                                <td class="bank-val">Tiruppur</td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+                <td class="tax-label">SGST</td>
+                <td class="tax-value">{{ invoice.sgst_amt }}</td>
+            </tr>
+            <tr>
+                <td class="tax-label">IGST</td>
+                <td class="tax-value">{{ invoice.igst_amt }}</td>
+            </tr>
+            <tr>
+                <td class="tax-label">Round off</td>
+                <td class="tax-value">{{ invoice.total_gst|round_off }}</td>
+            </tr>
+            <tr>
+                <td class="tax-label">Total amount after Tax</td>
+                <td class="tax-value">{{ invoice.total_gst|round_total|indian_currency }}</td>
+            </tr>
+            <tr>
+                <td class="tax-label">Total Amount</td>
+                <td class="tax-value">{{ invoice.total_gst|round_total|indian_currency }}</td>
+            </tr>
+            <tr>
+                <td rowspan="2" style="vertical-align:top; padding:0;">
+                    <div class="terms-cell">
+                        <h4>Terms &amp; Conditions</h4>
+                    </div>
+                </td>
+                <td class="tax-label">Gst on Reverse Charge</td>
+                <td class="tax-value">-</td>
+            </tr>
+            <tr>
+                <td class="eo-cell" colspan="2">E &amp; O.E</td>
+            </tr>
+        </table>
+
+        <!-- DECLARATION + SIGNATORY -->
+        <table>
+            <tr>
+                <td style="width:55%; vertical-align:top; padding:5px;">
+                    <div class="declaration">
+                        <span>Declaration</span>
+                        <p>MSME REGISTERED Unit-UDYAM-TN-28-0115114 SMALL Section 43B- Disallowance for Non-Payment
+                            under MSME ACT . Kindly make payment within 45days from the
+                            date of invoice . Further, we Declare that this invoice shows the actual price of the goods
+                            described and that all particulars are true and correct</p>
+                    </div>
+                </td>
+                <td class="signatory-cell" style="width:45%;">
+                    <div class="for-text">For Hayati Garments</div>
+                    <div class="auth-text">Authorised signatory</div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- FOOTER -->
+        <div class="footer-text">SUBJECT TO TIRUPPUR JURISTICATION</div>
+
+    </div><!-- end .page -->
+    <p style="text-align: center;">This is a Computer Generated Bill</p>
+
+</body>
+
+</html>

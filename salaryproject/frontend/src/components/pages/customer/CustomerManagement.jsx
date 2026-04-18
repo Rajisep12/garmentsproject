@@ -46,7 +46,10 @@ const CustomerManagement = () => {
         city: "",
         state: "",
         zip_code: "",
-        gst: ""
+        gst: "",
+        cgst: "",
+        sgst: "",
+        igst: ""
     });
 
     useEffect(() => {
@@ -291,7 +294,10 @@ const CustomerManagement = () => {
             city: "",
             state: "",
             zip_code: "",
-            gst: ""
+            gst: "",
+            cgst:"",
+            sgts:"",
+            igst:""
         });
     };
 
@@ -300,6 +306,16 @@ const CustomerManagement = () => {
             customer.name.toLowerCase().includes(searchQuery.toLowerCase())
         return matchesSearch;
     });
+
+    const Input = ({ label, ...props }) => (
+        <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1">{label}</label>
+            <input
+                {...props}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+            />
+        </div>
+    );
 
     return (
         <div className="space-y-4 md:space-y-6 p-3 md:p-4 lg:p-6">
@@ -546,177 +562,140 @@ const CustomerManagement = () => {
                 )}
             </div>
 
-            {/* Add Employee Popup */}
+            {/* Add Customer Popup */}
             {showAddPopup && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-3 md:p-4 z-50 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-red-100 mx-2">
-                        <div className="p-4 md:p-6">
-                            <div className="flex justify-between items-center mb-4 md:mb-6">
-                                <div className="flex items-center space-x-2 md:space-x-3">
-                                    <div className="p-2 bg-red-50 rounded-lg border border-red-100">
-                                        <FaStore className="text-lg md:text-xl text-red-600" />
-                                    </div>
-                                    <h2 className="text-lg md:text-xl font-bold text-gray-900">
-                                        Add New Customer
-                                    </h2>
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur-sm p-4">
+                    <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-200 flex flex-col max-h-[90vh]">
+
+                        {/* HEADER */}
+                        <div className="flex justify-between items-center px-6 py-4 border-b">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-red-100 rounded-lg">
+                                    <FaStore className="text-red-600 text-lg" />
                                 </div>
-                                <button
-                                    onClick={() => setShowAddPopup(false)}
-                                    className="text-gray-400 hover:text-red-600 text-xl md:text-2xl transition-colors"
-                                    disabled={isAdding}
-                                >
-                                    &times;
-                                </button>
+                                <h2 className="text-xl font-semibold text-gray-800">
+                                    Add New Customer
+                                </h2>
                             </div>
 
-                            <div className="space-y-3 md:space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            <button
+                                onClick={() => setShowAddPopup(false)}
+                                className="text-gray-400 hover:text-red-600 text-2xl"
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        {/* BODY */}
+                        <div className="p-6 overflow-y-auto space-y-6">
+
+                            {/* BASIC INFO */}
+                            <div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
                                     {/* Customer Name */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Customer Name *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={newCustomer.name}
-                                            onChange={(e) =>
-                                                setNewCustomer({ ...newCustomer, name: e.target.value })
-                                            }
-                                            className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg md:rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all hover:border-red-300 text-sm md:text-base"
-                                            placeholder="Enter customer name"
-                                            disabled={isAdding}
-                                        />
-                                    </div>
+                                    <Input
+                                        label="Customer Name *"
+                                        value={newCustomer.name}
+                                        onChange={(e) =>
+                                            setNewCustomer({ ...newCustomer, name: e.target.value })
+                                        }
+                                    />
 
-                                    {/* Contact Number */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Contact Number *
-                                        </label>
-                                        <input
-                                            type="tel"
-                                            value={newCustomer.phone || ""}
-                                            onChange={(e) =>
-                                                setNewCustomer({ ...newCustomer, phone: e.target.value })
-                                            }
-                                            className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg md:rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all hover:border-red-300 text-sm md:text-base"
-                                            placeholder="Enter contact number"
-                                            maxLength={10}
-                                            disabled={isAdding}
-                                        />
-                                    </div>
+                                    {/* Phone */}
+                                    <Input
+                                        label="Phone Number *"
+                                        type="tel"
+                                        maxLength={10}
+                                        value={newCustomer.phone || ""}
+                                        onChange={(e) =>
+                                            setNewCustomer({ ...newCustomer, phone: e.target.value })
+                                        }
+                                    />
+
+                                    {/* GST */}
+                                    <Input
+                                        label="GST Number"
+                                        value={newCustomer.gst || ""}
+                                        onChange={(e) =>
+                                            setNewCustomer({ ...newCustomer, gst: e.target.value })
+                                        }
+                                    />
 
                                 </div>
                             </div>
 
-                            {/* Street Address */}
+                            {/* ADDRESS */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Street Address *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={newCustomer.street_address}
-                                    onChange={(e) =>
-                                        setNewCustomer({ ...newCustomer, street_address: e.target.value })
-                                    }
-                                    className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                                    placeholder="Enter street address"
-                                />
+
+
+                                <div className="space-y-4">
+                                    <Input label="Street Address *"
+                                        value={newCustomer.street_address}
+                                        onChange={(e) => setNewCustomer({ ...newCustomer, street_address: e.target.value })} />
+
+                                    <div className="grid md:grid-cols-3 gap-4">
+                                        <Input label="City"
+                                            value={newCustomer.city}
+                                            onChange={(e) => setNewCustomer({ ...newCustomer, city: e.target.value })} />
+
+                                        <Input label="State"
+                                            value={newCustomer.state}
+                                            onChange={(e) => setNewCustomer({ ...newCustomer, state: e.target.value })} />
+
+                                        <Input label="Pincode"
+                                            value={newCustomer.zip_code}
+                                            onChange={(e) => setNewCustomer({ ...newCustomer, zip_code: e.target.value })} />
+                                    </div>
+                                </div>
                             </div>
 
-                            {/* City & State */}
-                            <div className="grid grid-cols-2 gap-3">
-                                <input
-                                    type="text"
-                                    value={newCustomer.city}
-                                    onChange={(e) =>
-                                        setNewCustomer({ ...newCustomer, city: e.target.value })
-                                    }
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                                    placeholder="City"
-                                />
+                            {/* TAX */}
+                            <div>
 
-                                <input
-                                    type="text"
-                                    value={newCustomer.state}
-                                    onChange={(e) =>
-                                        setNewCustomer({ ...newCustomer, state: e.target.value })
-                                    }
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                                    placeholder="State"
-                                />
+
+                                <div className="grid md:grid-cols-3 gap-4">
+                                    <Input label="CGST %" type="number"
+                                        step="0.01"
+                                        value={newCustomer.cgst}
+                                        onChange={(e) => setNewCustomer({ ...newCustomer, cgst: e.target.value })} />
+
+                                    <Input label="SGST %" type="number"
+                                        step="0.01"
+                                        value={newCustomer.sgst}
+                                        onChange={(e) => setNewCustomer({ ...newCustomer, sgst: e.target.value })} />
+
+                                    <Input label="IGST %" type="number"
+                                        step="0.01"
+                                        value={newCustomer.igst}
+                                        onChange={(e) => setNewCustomer({ ...newCustomer, igst: e.target.value })} />
+                                </div>
                             </div>
+                        </div>
 
-                            {/* Pincode & GST */}
-                            <div className="grid grid-cols-2 gap-3">
-                                <input
-                                    type="text"
-                                    value={newCustomer.zip_code}
-                                    onChange={(e) =>
-                                        setNewCustomer({ ...newCustomer, zip_code: e.target.value })
-                                    }
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                                    placeholder="Pincode"
-                                />
+                        {/* FOOTER */}
+                        <div className="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50">
+                            <button
+                                onClick={() => setShowAddPopup(false)}
+                                className="px-5 py-2 border rounded-lg text-gray-600 hover:bg-gray-100"
+                            >
+                                Cancel
+                            </button>
 
-                                <input
-                                    type="text"
-                                    value={newCustomer.gst}
-                                    onChange={(e) =>
-                                        setNewCustomer({ ...newCustomer, gst: e.target.value })
-                                    }
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                                    placeholder="GST Number"
-                                />
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row justify-end gap-2 md:space-x-3 mt-6 md:mt-8 pt-4 md:pt-6 border-t border-red-100">
-                                <button
-                                    onClick={() => setShowAddPopup(false)}
-                                    className="px-4 md:px-6 py-2 md:py-3 border border-gray-300 text-gray-700 rounded-lg md:rounded-xl hover:bg-gray-50 transition-colors font-medium hover:border-red-300 disabled:opacity-50 text-sm md:text-base order-2 sm:order-1"
-                                    disabled={isAdding}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleAddCustomer}
-                                    disabled={isAdding}
-                                    className="flex items-center justify-center px-4 md:px-6 py-2 md:py-3 bg-red-600 text-white rounded-lg md:rounded-xl hover:bg-red-700 transition-colors font-medium shadow-md hover:shadow-lg border border-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base order-1 sm:order-2"
-                                >
-                                    {isAdding ? (
-                                        <>
-                                            <svg
-                                                className="animate-spin -ml-1 mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 text-white"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <circle
-                                                    className="opacity-25"
-                                                    cx="12"
-                                                    cy="12"
-                                                    r="10"
-                                                    stroke="currentColor"
-                                                    strokeWidth="4"
-                                                ></circle>
-                                                <path
-                                                    className="opacity-75"
-                                                    fill="currentColor"
-                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                ></path>
-                                            </svg>
-                                            Adding...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <FaPlus className="mr-2 text-sm md:text-base" />
-                                            Add Customer
-                                        </>
-                                    )}
-                                </button>
-                            </div>
+                            <button
+                                onClick={handleAddCustomer}
+                                disabled={isAdding}
+                                className="flex items-center gap-2 px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow"
+                            >
+                                {isAdding ? (
+                                    <span className="animate-pulse">Saving...</span>
+                                ) : (
+                                    <>
+                                        <FaPlus />
+                                        Add Customer
+                                    </>
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -724,128 +703,177 @@ const CustomerManagement = () => {
 
             {/* Edit Customer Popup */}
             {showEditPopup && editingCustomer && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-3 md:p-4 z-50 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl md:rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-green-100 mx-2">
-                        <div className="p-4 md:p-6">
-                            <div className="flex justify-between items-center mb-4 md:mb-6">
-                                <div className="flex items-center space-x-2 md:space-x-3">
-                                    <div className="p-2 bg-green-50 rounded-lg border border-green-100">
-                                        <FaEdit className="text-lg md:text-xl text-green-600" />
-                                    </div>
-                                    <h2 className="text-lg md:text-xl font-bold text-gray-900">
-                                        Edit Customer #{editingCustomer.id}
-                                    </h2>
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur-sm p-4">
+                    <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-200 flex flex-col max-h-[90vh]">
+
+                        {/* HEADER */}
+                        <div className="flex justify-between items-center px-6 py-4 border-b">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-green-100 rounded-lg">
+                                    <FaEdit className="text-green-600 text-lg" />
                                 </div>
-                                <button
-                                    onClick={() => {
-                                        setShowEditPopup(false);
-                                        setEditingCustomer(null);
-                                    }}
-                                    className="text-gray-400 hover:text-green-600 text-xl md:text-2xl transition-colors"
-                                >
-                                    &times;
-                                </button>
+                                <h2 className="text-xl font-semibold text-gray-800">
+                                    Edit Customer #{editingCustomer.id}
+                                </h2>
                             </div>
 
-                            <div className="space-y-3 md:space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Customer Name *
-                                    </label>
-                                    <input
-                                        type="text"
+                            <button
+                                onClick={() => {
+                                    setShowEditPopup(false);
+                                    setEditingCustomer(null);
+                                }}
+                                className="text-gray-400 hover:text-green-600 text-2xl"
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        {/* BODY */}
+                        <div className="p-6 overflow-y-auto space-y-6">
+
+                            {/* BASIC DETAILS */}
+                            <div>
+
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                                    <Input
+                                        label="Customer Name *"
                                         value={editingCustomer.name}
                                         onChange={(e) =>
                                             setEditingCustomer({ ...editingCustomer, name: e.target.value })
                                         }
-                                        className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg md:rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all hover:border-green-300 text-sm md:text-base"
-                                        placeholder="Enter Customer name"
                                     />
-                                </div>
 
-                                {/* Street Address */}
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Street Address *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={editingCustomer.street_address}
+                                    <Input
+                                        label="Phone Number *"
+                                        value={editingCustomer.phone || ""}
                                         onChange={(e) =>
-                                            setEditingCustomer({ ...editingCustomer, street_address: e.target.value })
+                                            setEditingCustomer({ ...editingCustomer, phone: e.target.value })
                                         }
-                                        className="w-full px-3 md:px-4 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                                        placeholder="Enter street address"
-                                    />
-                                </div>
-
-                                {/* City & State */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    <input
-                                        type="text"
-                                        value={editingCustomer.city}
-                                        onChange={(e) =>
-                                            setEditingCustomer({ ...editingCustomer, city: e.target.value })
-                                        }
-                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                                        placeholder="City"
                                     />
 
-                                    <input
-                                        type="text"
-                                        value={editingCustomer.state}
-                                        onChange={(e) =>
-                                            setEditingCustomer({ ...editingCustomer, state: e.target.value })
-                                        }
-                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                                        placeholder="State"
-                                    />
-                                </div>
-
-                                {/* Pincode & GST */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    <input
-                                        type="text"
-                                        value={editingCustomer.zip_code}
-                                        onChange={(e) =>
-                                            setEditingCustomer({ ...editingCustomer, zip_code: e.target.value })
-                                        }
-                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                                        placeholder="Pincode"
-                                    />
-
-                                    <input
-                                        type="text"
-                                        value={editingCustomer.gst}
+                                    <Input
+                                        label="GST Number"
+                                        value={editingCustomer.gst || ""}
                                         onChange={(e) =>
                                             setEditingCustomer({ ...editingCustomer, gst: e.target.value })
                                         }
-                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                                        placeholder="GST Number"
+                                    />
+
+                                </div>
+                            </div>
+
+                            {/* ADDRESS */}
+                            <div>
+
+                                <div className="space-y-4">
+
+                                    <Input
+                                        label="Street Address *"
+                                        value={editingCustomer.street_address}
+                                        onChange={(e) =>
+                                            setEditingCustomer({
+                                                ...editingCustomer,
+                                                street_address: e.target.value,
+                                            })
+                                        }
+                                    />
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <Input
+                                            label="City"
+                                            value={editingCustomer.city}
+                                            onChange={(e) =>
+                                                setEditingCustomer({ ...editingCustomer, city: e.target.value })
+                                            }
+                                        />
+
+                                        <Input
+                                            label="State"
+                                            value={editingCustomer.state}
+                                            onChange={(e) =>
+                                                setEditingCustomer({ ...editingCustomer, state: e.target.value })
+                                            }
+                                        />
+
+                                        <Input
+                                            label="Pincode"
+                                            value={editingCustomer.zip_code}
+                                            onChange={(e) =>
+                                                setEditingCustomer({
+                                                    ...editingCustomer,
+                                                    zip_code: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* TAX */}
+                            <div>
+
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <Input
+                                        label="CGST %" type="number"
+                                        step="0.01"
+                                        value={editingCustomer.cgst || ""}
+                                        onChange={(e) =>
+                                            setEditingCustomer({
+                                                ...editingCustomer,
+                                                cgst: e.target.value,
+                                            })
+                                        }
+                                    />
+
+                                    <Input
+                                        label="SGST %" type="number"
+                                        step="0.01"
+                                        value={editingCustomer.sgst || ""}
+                                        onChange={(e) =>
+                                            setEditingCustomer({
+                                                ...editingCustomer,
+                                                sgst: e.target.value,
+                                            })
+                                        }
+                                    />
+
+                                    <Input
+                                        label="IGST %" type="number"
+                                        step="0.01"
+                                        value={editingCustomer.igst || ""}
+                                        onChange={(e) =>
+                                            setEditingCustomer({
+                                                ...editingCustomer,
+                                                igst: e.target.value,
+                                            })
+                                        }
                                     />
                                 </div>
-
-
                             </div>
+                        </div>
 
-                            <div className="flex flex-col sm:flex-row justify-end gap-2 md:space-x-3 mt-6 md:mt-8 pt-4 md:pt-6 border-t border-green-100">
-                                <button
-                                    onClick={() => {
-                                        setShowEditPopup(false);
-                                        setEditingCustomer(null);
-                                    }}
-                                    className="px-4 md:px-6 py-2 md:py-3 border border-gray-300 text-gray-700 rounded-lg md:rounded-xl hover:bg-gray-50 transition-colors font-medium hover:border-green-300 text-sm md:text-base order-2 sm:order-1"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleEditCustomer}
-                                    className="flex items-center justify-center px-4 md:px-6 py-2 md:py-3 bg-green-600 text-white rounded-lg md:rounded-xl hover:bg-green-700 transition-colors font-medium shadow-md hover:shadow-lg border border-green-700 text-sm md:text-base order-1 sm:order-2"
-                                >
-                                    <FaSave className="mr-2 text-sm md:text-base" />
-                                    Save Changes
-                                </button>
-                            </div>
+                        {/* FOOTER */}
+                        <div className="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50">
+                            <button
+                                onClick={() => {
+                                    setShowEditPopup(false);
+                                    setEditingCustomer(null);
+                                }}
+                                className="px-5 py-2 border rounded-lg text-gray-600 hover:bg-gray-100"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={handleEditCustomer}
+                                className="flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 shadow"
+                            >
+                                <FaSave />
+                                Save Changes
+                            </button>
                         </div>
                     </div>
                 </div>

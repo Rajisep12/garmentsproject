@@ -17,6 +17,7 @@ import OrderManagement from "./components/pages/order/OrderManagement";
 import SalaryManagement from "./components/pages/salary/SalaryManagement";
 import BillGeneration from "./components/pages/bill/BillGenerationSimple";
 import TaxManagement from "./components/pages/tax/TaxManagement";
+import InvoiceManagement from "./components/pages/invoice/InvoiceManagement";
 
 import "./App.css";
 import Login from "./components/pages/Login";
@@ -64,6 +65,7 @@ function App() {
             <Route path="/admin/salary" element={<SalaryManagement />} />
             <Route path="/admin/bill" element={<BillGeneration />} />
             <Route path="/admin/tax" element={<TaxManagement />} />
+            <Route path="/admin/invoice" element={<InvoiceManagement/>} />
 
           </Route>
         </Routes>

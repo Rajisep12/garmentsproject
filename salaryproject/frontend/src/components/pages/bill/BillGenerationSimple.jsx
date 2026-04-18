@@ -38,10 +38,15 @@ const BillGenerationSimple = () => {
         reverse_charge: false,
         supply_date: "",
         tax: "",
+        place: "",
+        cgst: "2.5",
+        sgst: "2.5",
+        igst: "0.0",
         // state:"",
         // code:"",
         transport_mode: "Road",
         transport_vehicle: "TN 00 AB 1234",
+        cgst_amt: "0.0",
 
 
     });
@@ -67,6 +72,7 @@ const BillGenerationSimple = () => {
         "Track Pant",
         "Shorts",
     ];
+    const hsnOptions = ["998821", "998822", "6109", "6111", "6112", "6107", "6108"];
     const libraries = ["places"];
     const [autocomplete, setAutocomplete] = useState(null);
     const [formData, setFormData] = useState({
@@ -120,7 +126,7 @@ const BillGenerationSimple = () => {
         } catch (err) {
             console.log(err);
             setError("Error fetching Customer.");
-            toast.error("Failed to load Customer. Please try again.");
+            //toast.error("Failed to load Customer. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -144,7 +150,7 @@ const BillGenerationSimple = () => {
         } catch (err) {
             console.log(err);
             setError("Error fetching Place.");
-            toast.error("Failed to load Place. Please try again.");
+            //toast.error("Failed to load Place. Please try again.");
         } finally {
             setIsLoading(false);
         }
@@ -162,11 +168,21 @@ const BillGenerationSimple = () => {
         try {
             const payload = {
                 ...newBill,
+
+                // ✅ store calculated values
+                total_amt: totalAmount.toFixed(2),
+                cgst_amt: totalCGST.toFixed(2),
+                sgst_amt: totalSGST.toFixed(2),
+                igst_amt: totalIGST.toFixed(2),
+                total_gst: grandTotal.toFixed(2),
+
                 items: items.map(item => ({
                     ...item,
                     qty: Number(item.qty),
                     rate: Number(item.rate),
                     discount: Number(item.discount),
+                    amt: Number(item.amount),
+                    total_amt: Number(item.total),
                 })),
             };
             const response = await axios.post(
@@ -182,8 +198,7 @@ const BillGenerationSimple = () => {
 
             if (response.data) {
                 toast.success("Bill added successfully!");
-                resetForm();
-
+                //resetForm();
             }
         } catch (error) {
             console.error("Error adding BILL:", error);
@@ -254,33 +269,33 @@ const BillGenerationSimple = () => {
 
         if (lastInvoice) {
             const prefix = lastInvoice.split("/")[0]; // HG-001
-            const numberPart = prefix.split("-")[1];  // 001
+            const numberPart = prefix.split("-")[1];  // "001"
 
+            // Remove leading zeros and increment
             nextNumber = parseInt(numberPart, 10) + 1;
         }
 
-        const paddedNumber = String(nextNumber).padStart(3, "0");
+        // Pad to 2 digits instead of 3
+        const paddedNumber = String(nextNumber).padStart(2, "0");
 
         return `HG-${paddedNumber}/${financialYear}`;
     };
-
     const handleChange = (index, field, value) => {
-        setItems((prevItems) => {
-            const updated = [...prevItems];
-            updated[index][field] = value;
+        const updatedItems = [...items];
 
-            const qty = Number(updated[index].qty) || 0;
-            const rate = Number(updated[index].rate) || 0;
-            const discount = Number(updated[index].discount) || 0;
+        updatedItems[index][field] = value;
 
-            const amount = qty * rate;
-            const total = amount - discount;
+        // ✅ Auto calculate amount
+        const qty = parseFloat(updatedItems[index].qty) || 0;
+        const rate = parseFloat(updatedItems[index].rate) || 0;
 
-            updated[index].amount = amount;
-            updated[index].total = total;
+        updatedItems[index].amount = qty * rate;
 
-            return updated;
-        });
+        // ✅ total after discount (if any)
+        const discount = parseFloat(updatedItems[index].discount) || 0;
+        updatedItems[index].total = (qty * rate) - discount;
+
+        setItems(updatedItems);
     };
     useEffect(() => {
         const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
@@ -290,7 +305,20 @@ const BillGenerationSimple = () => {
         }));
 
     }, []);
- 
+
+    const totalAmount = items.reduce((sum, item) => sum + (item.total || 0), 0);
+
+    const cgst = parseFloat(newBill.cgst) || 0;
+    const sgst = parseFloat(newBill.sgst) || 0;
+    const igst = parseFloat(newBill.igst) || 0;
+
+    const totalCGST = (totalAmount * cgst) / 100;
+    const totalSGST = (totalAmount * sgst) / 100;
+    const totalIGST = (totalAmount * igst) / 100;
+
+    const grandTotal = totalAmount + totalCGST + totalSGST + totalIGST;
+
+
     return (
         <div className="space-y-4 md:space-y-6 p-3 md:p-4 lg:p-6">
             {/* Header */}
@@ -339,19 +367,19 @@ const BillGenerationSimple = () => {
                         </select>
                     </div>
 
-                    <div className="w-[140px]">
+                    <div className="w-[110px]">
                         <label className="text-xs">Invoice No</label>
                         <input className="input" placeholder="Invoice No" value={newBill.invoice_no} readOnly />
                     </div>
 
-                    <div className="w-[140px]">
+                    <div className="w-[120px]">
                         <label className="text-xs">Invoice Date</label>
                         <input type="date" className="input" value={newBill.invoice_date}
                             onChange={(e) => setInvoiceDate(e.target.value)} />
                     </div>
 
-                    <div className="w-[100px]">
-                        <label className="text-xs">Reverse Charge</label>
+                    {/* <div className="w-[50px]">
+                        <label className="text-xs">Rev.Chg</label>
                         <select
                             className="input"
                             value={newBill.reverse_charge}
@@ -365,23 +393,23 @@ const BillGenerationSimple = () => {
                             <option value="false">N</option>
                             <option value="true">Y</option>
                         </select>
-                    </div>
+                    </div> */}
 
-                    <div className="w-[140px]">
+                    <div className="w-[60px]">
                         <label className="text-xs">Transport</label>
                         <input className="input" placeholder="Road / Air" value={newBill.transport_mode} onChange={(e) =>
                             setNewBill({ ...newBill, transport_mode: e.target.value })
                         } />
                     </div>
 
-                    <div className="w-[140px]">
+                    <div className="w-[110px]">
                         <label className="text-xs">Vehicle</label>
                         <input className="input" placeholder="TN 00 AB 1234" value={newBill.transport_vehicle} onChange={(e) =>
                             setNewBill({ ...newBill, transport_vehicle: e.target.value })
                         } />
                     </div>
 
-                    <div className="w-[140px]">
+                    <div className="w-[120px]">
                         <label className="text-xs">Supply Date</label>
                         <input type="date" className="input" value={newBill.supply_date} onChange={(e) =>
                             setNewBill({ ...newBill, supply_date: e.target.value })
@@ -390,7 +418,10 @@ const BillGenerationSimple = () => {
 
                     <div className="w-[120px]">
                         <label className="text-xs">Place</label>
-                        <select
+                        <input type="text" className="input" value={newBill.place} onChange={(e) =>
+                            setNewBill({ ...newBill, place: e.target.value })
+                        } />
+                        {/* <select
                             value={newBill.tax}
                             onChange={(e) =>
                                 setNewBill({ ...newBill, tax: e.target.value })
@@ -404,32 +435,27 @@ const BillGenerationSimple = () => {
                                     {place.name}
                                 </option>
                             ))}
-                        </select>
+                        </select> */}
                     </div>
-                    <LoadScript
-                        googleMapsApiKey="YOUR_API_KEY"
-                        libraries={libraries}
-                    >
-                        <div style={{ width: "300px", margin: "20px auto" }}>
 
-                            <label>Search Location</label>
-                            <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-                                <input
-                                    type="text"
-                                    placeholder="Type place (e.g. Chen...)"
-                                    style={inputStyle}
-                                />
-                            </Autocomplete>
-
-                            <label>State</label>
-                            <input value={formData.state} readOnly style={inputStyle} />
-
-                            <label>District</label>
-                            <input value={formData.district} readOnly style={inputStyle} />
-
-                        </div>
-                    </LoadScript>
-
+                    <div className="w-[50px]">
+                        <label className="text-xs">CGST</label>
+                        <input type="text" className="input" value={newBill.cgst} onChange={(e) =>
+                            setNewBill({ ...newBill, cgst: e.target.value })
+                        } />
+                    </div>
+                    <div className="w-[50px]">
+                        <label className="text-xs">SGST</label>
+                        <input type="text" className="input" value={newBill.sgst} onChange={(e) =>
+                            setNewBill({ ...newBill, sgst: e.target.value })
+                        } />
+                    </div>
+                    <div className="w-[50px]">
+                        <label className="text-xs">CGST</label>
+                        <input type="text" className="input" value={newBill.igst} onChange={(e) =>
+                            setNewBill({ ...newBill, igst: e.target.value })
+                        } />
+                    </div>
 
                 </div>
 
@@ -480,9 +506,18 @@ const BillGenerationSimple = () => {
                                     ))}
                                 </select>
 
-                                <input type="text" className="input" value={item.hsn} onChange={(e) =>
-                                    handleChange(index, "hsn", e.target.value)
-                                } />
+                                <select
+                                    className="input"
+                                    value={item.hsn}
+                                    onChange={(e) => handleChange(index, "hsn", e.target.value)}
+                                >
+                                    <option value="">HSN</option>
+                                    {hsnOptions.map((hsn, i) => (
+                                        <option key={i} value={hsn}>
+                                            {hsn}
+                                        </option>
+                                    ))}
+                                </select>
 
                                 <input type="number" className="input" value={item.qty} onChange={(e) =>
                                     handleChange(index, "qty", e.target.value)
@@ -492,13 +527,13 @@ const BillGenerationSimple = () => {
                                     handleChange(index, "rate", e.target.value)
                                 } />
 
-                                <input className="input bg-gray-100" value={item.amount} readOnly />
+                                <input type="number" className="input bg-gray-100" value={item.amount} readOnly />
 
                                 <input type="number" className="input" value={item.discount} onChange={(e) =>
                                     handleChange(index, "discount", e.target.value)
                                 } />
 
-                                <input className="input bg-gray-100" value={item.total} readOnly />
+                                <input type="number" className="input bg-gray-100" value={item.total} readOnly />
 
                                 {/* ❌ Delete Button */}
                                 <button
@@ -514,16 +549,41 @@ const BillGenerationSimple = () => {
                 </div>
 
                 {/* 🔹 Footer Buttons */}
-                <div className="flex justify-end gap-3 pt-4 border-t">
-                    <button className="px-4 py-2 bg-gray-200 rounded-lg">
-                        Cancel
-                    </button>
-                    <button onClick={handleAddBill} className="px-4 py-2 bg-red-600 text-white rounded-lg flex items-center gap-2">
-                        <FaSave />
-                        Save Invoice
-                    </button>
-                </div>
+                <div className="flex justify-between items-center pt-4 border-t">
 
+                    {/* LEFT SIDE */}
+                    <div className="text-right space-y-1">
+                        <div>Total: ₹ {totalAmount.toFixed(2)}</div>
+
+                        {parseFloat(newBill.igst) > 0 ? (
+                            <div>IGST: ₹ {totalIGST.toFixed(2)}</div>
+                        ) : (
+                            <>
+                                <div>CGST: ₹ {totalCGST.toFixed(2)}</div>
+                                <div>SGST: ₹ {totalSGST.toFixed(2)}</div>
+                            </>
+                        )}
+
+                        <div className="font-bold text-lg">
+                            Grand Total: ₹ {grandTotal.toFixed(2)}
+                        </div>
+                    </div>
+
+                    {/* RIGHT SIDE */}
+                    <div className="flex gap-3">
+                        <button className="px-4 py-2 bg-gray-200 rounded-lg">
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleAddBill}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg flex items-center gap-2"
+                        >
+                            <FaSave />
+                            Save Invoice
+                        </button>
+                    </div>
+
+                </div>
             </div>
 
 

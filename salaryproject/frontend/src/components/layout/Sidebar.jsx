@@ -87,8 +87,8 @@ const Sidebar = () => {
       badge: null,
     },    
     {
-      path: "/admin/inventory/report",
-      name: "Report",
+      path: "/admin/invoice",
+      name: "Invoice",
       icon: <FaFileAlt />,
       badge: null,
     },

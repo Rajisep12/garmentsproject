@@ -70,6 +70,9 @@ class TblCustomer(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_deleted = models.BooleanField(default=False)  
     deleted_at = models.DateTimeField(auto_now_add=True)
+    cgst = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=0)
+    sgst = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=0)
+    igst = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, default=0)
     
     class Meta:
         db_table = 'app_tblcustomer'
@@ -123,7 +126,16 @@ class TblBill(models.Model):
     supply_date = models.DateField(null=True, blank=True)
     transport_vehicle = models.CharField(max_length=100)
     tax = models.ForeignKey(TblTax, on_delete=models.CASCADE,null=True, blank=True,related_name='TblBill_tax')
+    place = models.CharField(max_length=100)
+    cgst_amt = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False, default=0)
+    sgst_amt = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False, default=0)
+    igst_amt = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False, default=0)    
+    cgst = models.DecimalField(max_digits=5, decimal_places=2, null=False, blank=False, default=0)
+    sgst = models.DecimalField(max_digits=5, decimal_places=2, null=False, blank=False, default=0)
+    igst = models.DecimalField(max_digits=5, decimal_places=2, null=False, blank=False, default=0)
     total_amt = models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True)    
+    total_gst = models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True)    
+    pdf_file = models.FileField(upload_to='invoices/', null=True, blank=True)
     
     class Meta:
         db_table = 'app_tblbill'

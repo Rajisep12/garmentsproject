@@ -151,17 +151,6 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-
-        
-        <button
-          className="flex items-center justify-center bg-red-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-lg md:rounded-xl hover:bg-red-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg border border-red-700 w-full md:w-auto"
-        >
-          <span className="text-sm md:text-base">Invoice Generate</span>
-        </button>
-
-
-
-
       </div>
 
     </div>
