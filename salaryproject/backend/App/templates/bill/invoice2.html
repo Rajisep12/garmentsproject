@@ -380,12 +380,12 @@
                 <td style="font-weight:700;">NAME: {{ invoice.customer.name|default:"" }}</td>
             </tr>
             <tr class="party-table party-name-row">
-                <td>{{ invoice.customer.street_address|default:"" }}{{ invoice.customer.city|default:"" }}</td>
-                <td>{{ invoice.customer.street_address|default:"" }}{{ invoice.customer.city|default:"" }}</td>
+                <td>{{ invoice.customer.street_address|default:"" }}{{ invoice.customer.city|default:"" }}-{{ invoice.customer.zip_code|default:"" }}</td>
+                <td>{{ invoice.customer.street_address|default:"" }}{{ invoice.customer.city|default:"" }}-{{ invoice.customer.zip_code|default:"" }}</td>
             </tr>
             <tr class="party-table">
-                <td>Cell: </td>
-                <td>Cell: </td>
+                <td>Cell: 9943919682</td>
+                <td>Cell: 9943919682</td>
             </tr>
             <tr class="party-table">
                 <td>GSTIN: {{ invoice.customer.gst|default:"" }}</td>
@@ -480,11 +480,11 @@
                     {{ invoice.total_gst|round_total|amount_in_words }}
                 </td>
                 <td class="tax-label">Total amount before Tax</td>
-                <td class="tax-value">{{ invoice.total_amt|indian_currency }}</td>
+                <td class="tax-value"><strong>{{ invoice.total_amt|indian_currency }}</strong></td>
             </tr>
             <tr>
                 <td class="tax-label">CGST </td>
-                <td class="tax-value">{{ invoice.cgst_amt }}</td>
+                <td class="tax-value"><strong>{{ invoice.cgst_amt }}</strong></td>
             </tr>
             <tr>
                 <td rowspan="5" style="vertical-align:top; padding:0;">
@@ -515,23 +515,23 @@
                     </div>
                 </td>
                 <td class="tax-label">SGST</td>
-                <td class="tax-value">{{ invoice.sgst_amt }}</td>
+                <td class="tax-value"><strong>{{ invoice.sgst_amt }}</strong></td>
             </tr>
             <tr>
                 <td class="tax-label">IGST</td>
-                <td class="tax-value">{{ invoice.igst_amt }}</td>
+                <td class="tax-value"><strong>{{ invoice.igst_amt }}</strong></td>
             </tr>
             <tr>
                 <td class="tax-label">Round off</td>
-                <td class="tax-value">{{ invoice.total_gst|round_off }}</td>
+                <td class="tax-value"><strong>{{ invoice.total_gst|round_off }}</strong></td>
             </tr>
             <tr>
                 <td class="tax-label">Total amount after Tax</td>
-                <td class="tax-value">{{ invoice.total_gst|round_total|indian_currency }}</td>
+                <td class="tax-value"><strong>{{ invoice.total_gst|round_total|indian_currency }}</strong></td>
             </tr>
             <tr>
                 <td class="tax-label">Total Amount</td>
-                <td class="tax-value">{{ invoice.total_gst|round_total|indian_currency }}</td>
+                <td class="tax-value"><strong>{{ invoice.total_gst|round_total|indian_currency }}</strong></td>
             </tr>
             <tr>
                 <td rowspan="2" style="vertical-align:top; padding:0;">

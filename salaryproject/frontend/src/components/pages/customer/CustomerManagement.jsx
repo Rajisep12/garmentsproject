@@ -20,6 +20,20 @@ import {
 import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
 import { toast } from "react-toastify";
 
+
+// ✅ Move this OUTSIDE CustomerManagement — at the top level of the file
+const Input = React.memo(({ label, ...props }) => (
+    <div className="flex flex-col">
+        <label className="text-sm text-gray-600 mb-1">
+            {label}
+        </label>
+        <input
+            {...props}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+        />
+    </div>
+));
+
 const CustomerManagement = () => {
     const [customer, setCustomer] = useState([]);
     const [error, setError] = useState(null);
@@ -46,6 +60,7 @@ const CustomerManagement = () => {
         city: "",
         state: "",
         zip_code: "",
+        mobile: "",
         gst: "",
         cgst: "",
         sgst: "",
@@ -58,7 +73,7 @@ const CustomerManagement = () => {
 
 
 
-    // Fetch aisles
+    // Fetch customer
     const fetchCustomer = async (page = 1, search = "") => {
         setIsLoading(true);
         try {
@@ -77,7 +92,7 @@ const CustomerManagement = () => {
                 previous: response.data.previous,
             });
             setTotalPages(Math.ceil(response.data.count / itemsPerPage));
-            setCurrentPage(page);
+            //setCurrentPage(page);
         } catch (err) {
             console.log(err);
             setError("Error fetching Customer.");
@@ -164,6 +179,9 @@ const CustomerManagement = () => {
                     state: newCustomer.state.trim(),
                     zip_code: newCustomer.zip_code.trim(),
                     gst: newCustomer.gst.trim(),
+                    cgst: newCustomer.cgst,
+                    sgst: newCustomer.sgst,
+                    igst: newCustomer.igst,
                 },
                 {
                     headers: {
@@ -226,6 +244,9 @@ const CustomerManagement = () => {
                     state: editingCustomer.state.trim(),
                     zip_code: editingCustomer.zip_code.trim(),
                     gst: editingCustomer.gst.trim(),
+                    cgst: editingCustomer.cgst,
+                    sgst: editingCustomer.sgst,
+                    igst: editingCustomer.igst,
 
                 },
                 {
@@ -294,10 +315,11 @@ const CustomerManagement = () => {
             city: "",
             state: "",
             zip_code: "",
+            mobile: "",
             gst: "",
-            cgst:"",
-            sgts:"",
-            igst:""
+            cgst: "",
+            sgst: "",
+            igst: ""
         });
     };
 
@@ -307,15 +329,7 @@ const CustomerManagement = () => {
         return matchesSearch;
     });
 
-    const Input = ({ label, ...props }) => (
-        <div className="flex flex-col">
-            <label className="text-sm text-gray-600 mb-1">{label}</label>
-            <input
-                {...props}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
-            />
-        </div>
-    );
+  
 
     return (
         <div className="space-y-4 md:space-y-6 p-3 md:p-4 lg:p-6">
@@ -357,7 +371,7 @@ const CustomerManagement = () => {
                 </div>
             </div>
 
-            {/* Aisles Table */}
+            {/* Customer Table */}
             <div className="bg-white rounded-lg md:rounded-xl shadow-sm border border-red-100 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[600px]">
@@ -598,7 +612,10 @@ const CustomerManagement = () => {
                                         label="Customer Name *"
                                         value={newCustomer.name}
                                         onChange={(e) =>
-                                            setNewCustomer({ ...newCustomer, name: e.target.value })
+                                            setNewCustomer((prev) => ({
+                                                ...prev,
+                                                name: e.target.value
+                                            }))
                                         }
                                     />
 
@@ -607,9 +624,13 @@ const CustomerManagement = () => {
                                         label="Phone Number *"
                                         type="tel"
                                         maxLength={10}
-                                        value={newCustomer.phone || ""}
+                                        value={newCustomer.mobile || ""}
                                         onChange={(e) =>
-                                            setNewCustomer({ ...newCustomer, phone: e.target.value })
+                                            setNewCustomer((prev) => ({
+                                                ...prev,
+                                                mobile: e.target.value
+                                            }))
+                                            
                                         }
                                     />
 
@@ -618,7 +639,10 @@ const CustomerManagement = () => {
                                         label="GST Number"
                                         value={newCustomer.gst || ""}
                                         onChange={(e) =>
-                                            setNewCustomer({ ...newCustomer, gst: e.target.value })
+                                            setNewCustomer((prev) => ({
+                                                ...prev,
+                                                gst: e.target.value
+                                            }))
                                         }
                                     />
 
@@ -632,20 +656,26 @@ const CustomerManagement = () => {
                                 <div className="space-y-4">
                                     <Input label="Street Address *"
                                         value={newCustomer.street_address}
-                                        onChange={(e) => setNewCustomer({ ...newCustomer, street_address: e.target.value })} />
+                                        onChange={(e) => setNewCustomer((prev) => ({
+                                                ...prev,
+                                                street_address: e.target.value
+                                            }))} />
 
                                     <div className="grid md:grid-cols-3 gap-4">
                                         <Input label="City"
                                             value={newCustomer.city}
-                                            onChange={(e) => setNewCustomer({ ...newCustomer, city: e.target.value })} />
+                                            onChange={(e) => setNewCustomer((prev) => ({
+                                                ...prev, city: e.target.value }))} />
 
                                         <Input label="State"
                                             value={newCustomer.state}
-                                            onChange={(e) => setNewCustomer({ ...newCustomer, state: e.target.value })} />
+                                            onChange={(e) => setNewCustomer((prev) => ({
+                                                ...prev, state: e.target.value }))} />
 
                                         <Input label="Pincode"
                                             value={newCustomer.zip_code}
-                                            onChange={(e) => setNewCustomer({ ...newCustomer, zip_code: e.target.value })} />
+                                            onChange={(e) => setNewCustomer((prev) => ({
+                                                ...prev, zip_code: e.target.value }))} />
                                     </div>
                                 </div>
                             </div>
@@ -658,17 +688,20 @@ const CustomerManagement = () => {
                                     <Input label="CGST %" type="number"
                                         step="0.01"
                                         value={newCustomer.cgst}
-                                        onChange={(e) => setNewCustomer({ ...newCustomer, cgst: e.target.value })} />
+                                        onChange={(e) => setNewCustomer((prev) => ({
+                                                ...prev, cgst: e.target.value }))} />
 
                                     <Input label="SGST %" type="number"
                                         step="0.01"
                                         value={newCustomer.sgst}
-                                        onChange={(e) => setNewCustomer({ ...newCustomer, sgst: e.target.value })} />
+                                        onChange={(e) => setNewCustomer((prev) => ({
+                                                ...prev, sgst: e.target.value }))} />
 
                                     <Input label="IGST %" type="number"
                                         step="0.01"
                                         value={newCustomer.igst}
-                                        onChange={(e) => setNewCustomer({ ...newCustomer, igst: e.target.value })} />
+                                        onChange={(e) => setNewCustomer((prev) => ({
+                                                ...prev, igst: e.target.value }))} />
                                 </div>
                             </div>
                         </div>
@@ -747,9 +780,9 @@ const CustomerManagement = () => {
 
                                     <Input
                                         label="Phone Number *"
-                                        value={editingCustomer.phone || ""}
+                                        value={editingCustomer.mobile || ""}
                                         onChange={(e) =>
-                                            setEditingCustomer({ ...editingCustomer, phone: e.target.value })
+                                            setEditingCustomer({ ...editingCustomer, mobile: e.target.value })
                                         }
                                     />
 
@@ -923,7 +956,7 @@ const CustomerManagement = () => {
                                     <div className="space-y-2">
                                         <div className="flex justify-between">
                                             <span className="text-sm text-gray-700">Customer ID:</span>
-                                            <span className="font-semibold">#{employeeToDelete.id}</span>
+                                            <span className="font-semibold">#{customerToDelete.id}</span>
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-sm text-gray-700">Name:</span>

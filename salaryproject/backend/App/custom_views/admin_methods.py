@@ -17,8 +17,8 @@ import re
 from django.views.decorators.csrf import csrf_exempt
 import os
 from django.conf import settings
-from barcode import Code128
-from barcode.writer import ImageWriter
+#from barcode import Code128
+#from barcode.writer import ImageWriter
 from django.http import FileResponse, Http404
 from django.template.loader import render_to_string
 from django.http import HttpResponse
