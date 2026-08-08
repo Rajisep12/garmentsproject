@@ -295,7 +295,6 @@ def generate_invoice_html(request, invoice_id):
     return HttpResponse('HTML file generated and saved!')
 
 
-
 def generate_invoice_pdf(request, invoice_id):
     try:
         invoice = TblBill.objects.get(id=invoice_id)
@@ -304,9 +303,9 @@ def generate_invoice_pdf(request, invoice_id):
         return HttpResponse(f"Invoice {invoice_id} not found", status=404)
 
     copies = [
-        ('Original Copy',   f'invoice_{invoice.id}_originalcopy.pdf'),
-        ('Duplicate Copy',  f'invoice_{invoice.id}_duplicatecopy.pdf'),
-        ('Triplicate Copy', f'invoice_{invoice.id}_triplicatecopy.pdf'),
+        ('Original Copy',   f'invoice_{invoice.invoice_no}_originalcopy.pdf'),
+        #('Duplicate Copy',  f'invoice_{invoice.id}_duplicatecopy.pdf'),
+        #('Triplicate Copy', f'invoice_{invoice.id}_triplicatecopy.pdf'),
     ]
 
     pdf_files = {}
@@ -349,7 +348,7 @@ def generate_invoice_pdf(request, invoice_id):
 
     # Save original to DB
     try:
-        original_filename = f'invoice_{invoice.id}_originalcopy.pdf'
+        original_filename = f'invoice_{invoice.invoice_no}_originalcopy.pdf'
         invoice.pdf_file.save(
             original_filename,
             io.BytesIO(pdf_files[original_filename]),
@@ -365,69 +364,69 @@ def generate_invoice_pdf(request, invoice_id):
     print(f"✅ Sending ZIP response")
     return response
     
-def generate_invoice_pdf3(request, invoice_id):
-    invoice = TblBill.objects.get(id=invoice_id)
+# def generate_invoice_pdf3(request, invoice_id):
+#     invoice = TblBill.objects.get(id=invoice_id)
 
-    copies = [
-        ('Original Copy',   f'invoice_{invoice.id}_originalcopy.pdf'),
-        ('Duplicate Copy',  f'invoice_{invoice.id}_duplicatecopy.pdf'),
-        ('Triplicate Copy', f'invoice_{invoice.id}_triplicatecopy.pdf'),
-    ]
+#     copies = [
+#         ('Original Copy',   f'invoice_{invoice.id}_originalcopy.pdf'),
+#         ('Duplicate Copy',  f'invoice_{invoice.id}_duplicatecopy.pdf'),
+#         ('Triplicate Copy', f'invoice_{invoice.id}_triplicatecopy.pdf'),
+#     ]
 
-    font_config = FontConfiguration()
-    pdf_files = {}
+#     font_config = FontConfiguration()
+#     pdf_files = {}
 
-    for copy_label, filename in copies:
-        # Pass copy_label into template so it can be shown on the PDF
-        html_string = render_to_string('bill/invoice2.html', {
-            'invoice': invoice,
-            'copy_label': copy_label,
-        })
+#     for copy_label, filename in copies:
+#         # Pass copy_label into template so it can be shown on the PDF
+#         html_string = render_to_string('bill/invoice2.html', {
+#             'invoice': invoice,
+#             'copy_label': copy_label,
+#         })
 
-        pdf_bytes = HTML(
-            string=html_string,
-            base_url=request.build_absolute_uri('/')
-        ).write_pdf(font_config=font_config)
+#         pdf_bytes = HTML(
+#             string=html_string,
+#             base_url=request.build_absolute_uri('/')
+#         ).write_pdf(font_config=font_config)
 
-        pdf_files[filename] = pdf_bytes
+#         pdf_files[filename] = pdf_bytes
 
-    # Save only the Original Copy to DB
-    original_filename = f'invoice_{invoice.id}_originalcopy.pdf'
-    invoice.pdf_file.save(
-        original_filename,
-        io.BytesIO(pdf_files[original_filename]),
-        save=True  # saves the model record
-    )
+#     # Save only the Original Copy to DB
+#     original_filename = f'invoice_{invoice.id}_originalcopy.pdf'
+#     invoice.pdf_file.save(
+#         original_filename,
+#         io.BytesIO(pdf_files[original_filename]),
+#         save=True  # saves the model record
+#     )
 
-    # Create a ZIP with all 3 PDFs for download
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-        for filename, pdf_bytes in pdf_files.items():
-            zip_file.writestr(filename, pdf_bytes)
-    zip_buffer.seek(0)
+#     # Create a ZIP with all 3 PDFs for download
+#     zip_buffer = io.BytesIO()
+#     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+#         for filename, pdf_bytes in pdf_files.items():
+#             zip_file.writestr(filename, pdf_bytes)
+#     zip_buffer.seek(0)
 
-    response = HttpResponse(zip_buffer, content_type='application/zip')
-    response['Content-Disposition'] = f'attachment; filename="invoice_{invoice.id}_copies.zip"'
-    return response
+#     response = HttpResponse(zip_buffer, content_type='application/zip')
+#     response['Content-Disposition'] = f'attachment; filename="invoice_{invoice.id}_copies.zip"'
+#     return response
 
-def generate_invoice_pdf1(request, invoice_id):
-    print("id")
-    print(invoice_id)
-    invoice = TblBill.objects.get(id=invoice_id)
-    html_string = render_to_string('bill/invoice2.html', {'invoice': invoice})
+# def generate_invoice_pdf1(request, invoice_id):
+#     print("id")
+#     print(invoice_id)
+#     invoice = TblBill.objects.get(id=invoice_id)
+#     html_string = render_to_string('bill/invoice2.html', {'invoice': invoice})
 
-    result = io.BytesIO()
-    pisa_status = pisa.CreatePDF(html_string, dest=result)
+#     result = io.BytesIO()
+#     pisa_status = pisa.CreatePDF(html_string, dest=result)
     
-    if pisa_status.err:
-        return HttpResponse('Error generating PDF', status=500)
+#     if pisa_status.err:
+#         return HttpResponse('Error generating PDF', status=500)
 
-    # Save PDF to model
-    invoice.pdf_file.save(f'invoice_{invoice.id}.pdf', io.BytesIO(result.getvalue()))
-    return HttpResponse('PDF Generated and Saved!')
+#     # Save PDF to model
+#     invoice.pdf_file.save(f'invoice_{invoice.id}.pdf', io.BytesIO(result.getvalue()))
+#     return HttpResponse('PDF Generated and Saved!')
 
 
-def generate_invoice_pdf2(request, invoice_id):
+# def generate_invoice_pdf2(request, invoice_id):
     invoice = TblBill.objects.get(id=invoice_id)
     
     html_string = render_to_string('bill/invoice2.html', {'invoice': invoice})

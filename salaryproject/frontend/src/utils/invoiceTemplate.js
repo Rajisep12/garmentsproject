@@ -634,7 +634,8 @@ export const generateInvoiceHTML = (data) => `
       <tr>
         <td rowspan="2" style="vertical-align:top; padding:0;">
           <div class="terms-cell">
-            <h4>Terms &amp; Conditions</h4>
+            <h4>Terms &amp; Conditions</h4><br>
+            Advance 50% , after Delivery 50%
           </div>
         </td>
         <td class="tax-label">Gst on Reverse Charge</td>

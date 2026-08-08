@@ -45,11 +45,10 @@ const BillGenerationSimple = () => {
         // state:"",
         // code:"",
         transport_mode: "Road",
-        transport_vehicle: "TN 00 AB 1234",
+        transport_vehicle: "",
         cgst_amt: "0.0",
-
-
     });
+    
     const [items, setItems] = useState([
         {
             product: "",
@@ -68,11 +67,15 @@ const BillGenerationSimple = () => {
         "Polo Tshirt Full Sleeve",
         "SweatShirt",
         "Oversize Half Sleeve",
-        "Hoodie",
+        "Hoodie with Zipper",
+        "Hoodie without Zipper",
         "Track Pant",
+        "Pant - Adult",
+        "Pant - Kids",
         "Shorts",
+        "Forwarding & Packing"
     ];
-    const hsnOptions = ["998821", "998822", "6109", "6111", "6112", "6107", "6108"];
+    const hsnOptions = ["998821", "998822","994422", "6109", "6111", "6112", "6107", "6108"];
     const libraries = ["places"];
     const [autocomplete, setAutocomplete] = useState(null);
     const [formData, setFormData] = useState({
@@ -288,12 +291,14 @@ const BillGenerationSimple = () => {
         // ✅ Auto calculate amount
         const qty = parseFloat(updatedItems[index].qty) || 0;
         const rate = parseFloat(updatedItems[index].rate) || 0;
-
-        updatedItems[index].amount = qty * rate;
+        const amount = Number((qty * rate).toFixed(2));
+        updatedItems[index].amount = Number((qty * rate).toFixed(2));;
 
         // ✅ total after discount (if any)
+
         const discount = parseFloat(updatedItems[index].discount) || 0;
-        updatedItems[index].total = (qty * rate) - discount;
+        const total = Number((amount - discount).toFixed(2));
+        updatedItems[index].total = total;
 
         setItems(updatedItems);
     };
@@ -345,7 +350,7 @@ const BillGenerationSimple = () => {
                 {/* 🔹 Invoice Details */}
                 <div className="flex flex-wrap gap-3">
 
-                    <div className="w-[130px]">
+                    <div className="w-[220px]">
                         <label className="text-xs">Customer</label>
                         <select
                             value={newBill.customer}
@@ -355,7 +360,7 @@ const BillGenerationSimple = () => {
                                     customer: e.target.value
                                 }))
                             }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                            className="w-full px-5 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
                             disabled={isAdding}
                         >
                             <option value="">Customer</option>
@@ -404,7 +409,7 @@ const BillGenerationSimple = () => {
 
                     <div className="w-[110px]">
                         <label className="text-xs">Vehicle</label>
-                        <input className="input" placeholder="TN 00 AB 1234" value={newBill.transport_vehicle} onChange={(e) =>
+                        <input className="input" value={newBill.transport_vehicle} onChange={(e) =>
                             setNewBill({ ...newBill, transport_vehicle: e.target.value })
                         } />
                     </div>

@@ -384,16 +384,16 @@
                 <td>{{ invoice.customer.street_address|default:"" }}{{ invoice.customer.city|default:"" }}-{{ invoice.customer.zip_code|default:"" }}</td>
             </tr>
             <tr class="party-table">
-                <td>Cell: 9943919682</td>
-                <td>Cell: 9943919682</td>
+                <td>Cell:</td>
+                <td>Cell:</td>
             </tr>
             <tr class="party-table">
                 <td>GSTIN: {{ invoice.customer.gst|default:"" }}</td>
                 <td>GSTIN: {{ invoice.customer.gst|default:"" }}</td>
             </tr>
             <tr class="party-table">
-                <td>State: Tamil Nadu &nbsp; Code: 33</td>
-                <td>State: Tamil Nadu &nbsp; Code: 33 </td>
+                <td>State: Tamilnadu &nbsp; Code: 33</td>
+                <td>State: Tamilnadu &nbsp; Code: 33 </td>
                 <!-- <td>State: {{ invoice.customer.state|default:"Tamil Nadu" }} &nbsp; Code: {{
                     invoice.bill_state_code|default:"33" }}</td>
                 <td>State: {{ invoice.customer.state|default:"Tamil Nadu" }} &nbsp; Code: {{
@@ -536,7 +536,8 @@
             <tr>
                 <td rowspan="2" style="vertical-align:top; padding:0;">
                     <div class="terms-cell">
-                        <h4>Terms &amp; Conditions</h4>
+                        <h4>Terms &amp; Conditions</h4><br>
+                        <!-- <p style="font-size:16px;text-align: center;color: red;">Advance 50%, after Delivery 50%</p> -->
                     </div>
                 </td>
                 <td class="tax-label">Gst on Reverse Charge</td>

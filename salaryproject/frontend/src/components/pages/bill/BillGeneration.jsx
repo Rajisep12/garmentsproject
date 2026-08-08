@@ -276,8 +276,8 @@ const BillGenerationSimple = () => {
             const amount = qty * rate;
             const total = amount - discount;
 
-            updated[index].amount = amount;
-            updated[index].total = total;
+            updated[index].amount = amount.toFixed(2);;
+            updated[index].total = total.toFixed(2);;
 
             return updated;
         });

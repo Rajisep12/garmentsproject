@@ -1,6 +1,6 @@
 from django.urls import path, include
 #from rest_framework.routers import DefaultRouter
-from App.custom_views import admin,admin_methods
+from App.custom_views import admin,admin_methods, balancesheet
 
 urlpatterns = [
     
@@ -32,6 +32,8 @@ urlpatterns = [
     path('admin/bill/last_invoice/', admin_methods.get_last_invoice, name='last-invoice'),
 
     path('admin/generate-invoice/<int:invoice_id>/', admin_methods.generate_invoice_pdf, name='generate-invoice'),
+
+    path("admin/customer/<int:customer_id>/balance-sheet/", balancesheet.customer_balance_sheet, name="customer-balance-sheet"),
     
     # # User
     # path('admin/user/', admin_methods.get_users, name='user-list'),

@@ -4,9 +4,9 @@ import axios from "axios";
 import { BASE_URL } from "../../../config";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash, FaLock, FaUser } from "react-icons/fa";
+import bannerImg from "../../assets/hayati-banner.jpeg";
 
 const Login = ({ setIsAuthenticated }) => {
-  // Add this prop
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -42,19 +42,16 @@ const Login = ({ setIsAuthenticated }) => {
 
       const { access_token, refresh_token } = response.data;
 
-      // Check if tokens exist
       if (access_token && refresh_token) {
         localStorage.setItem("adminAccessToken", access_token);
         localStorage.setItem("adminRefreshToken", refresh_token);
         localStorage.setItem("userRole", "admin");
         localStorage.setItem("username", response.data.username || username);
 
-        // Update authentication state
         setIsAuthenticated(true);
 
         toast.success("Admin logged in successfully.");
 
-        // Navigate to dashboard
         setTimeout(() => {
           navigate("/admin/dashboard/", { replace: true });
         }, 500);
@@ -82,160 +79,205 @@ const Login = ({ setIsAuthenticated }) => {
     }
   };
 
-  // Check if input has value for label animation
   const hasUsernameValue = username.trim() !== "";
   const hasPasswordValue = password !== "";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-500 via-red-600 to-red-700 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 bg-red-900/10"></div>
-      <div className="absolute -top-40 -right-40 w-80 h-80 bg-red-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-red-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-red-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-
-      <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 w-full max-w-md border border-red-100 transform transition-all duration-300 hover:shadow-3xl">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-            <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
-              <FaLock className="text-white text-xl" />
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Admin <span className="text-red-600">Portal</span>
-          </h1>
-          <p className="text-gray-600">Sign in to access the dashboard</p>
-        </div>
-
-        <form onSubmit={handleLogin} className="space-y-6">
-          {/* Username Field */}
-          <div className="relative">
-            <div className="flex items-center border-b-2 border-gray-300 focus-within:border-red-500 transition-all duration-300">
-              <FaUser className="text-gray-400 ml-2 mr-3 transition-colors duration-300 group-focus-within:text-red-500" />
-              <div className="relative flex-1">
-                <label
-                  className={`absolute left-0 transition-all duration-300 pointer-events-none ${
-                    isUsernameFocused || hasUsernameValue
-                      ? "top-0 text-xs text-red-500 font-medium"
-                      : "top-3 text-gray-500"
-                  }`}
-                >
-                  Username
-                </label>
-                <input
-                  type="text"
-                  className="w-full pt-5 pb-2 bg-transparent outline-none text-gray-800 placeholder-transparent"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  onFocus={() => setIsUsernameFocused(true)}
-                  onBlur={() => setIsUsernameFocused(false)}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Password Field */}
-          <div className="relative">
-            <div className="flex items-center border-b-2 border-gray-300 focus-within:border-red-500 transition-all duration-300">
-              <FaLock className="text-gray-400 ml-2 mr-3 transition-colors duration-300 group-focus-within:text-red-500" />
-              <div className="relative flex-1">
-                <label
-                  className={`absolute left-0 transition-all duration-300 pointer-events-none ${
-                    isPasswordFocused || hasPasswordValue
-                      ? "top-0 text-xs text-red-500 font-medium"
-                      : "top-3 text-gray-500"
-                  }`}
-                >
-                  Password
-                </label>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  className="w-full pt-5 pb-2 bg-transparent outline-none text-gray-800 placeholder-transparent"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setIsPasswordFocused(true)}
-                  onBlur={() => setIsPasswordFocused(false)}
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="p-2 text-gray-400 hover:text-red-500 transition-colors focus:outline-none"
-                tabIndex="-1"
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
-              isLoading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white"
-            }`}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center">
-                <svg
-                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Signing In...
-              </div>
-            ) : (
-              "Sign In"
-            )}
-          </button>
-        </form>
-      </div>
-
-      {/* Add CSS animation styles */}
+    <div className="min-h-screen bg-[#161211] flex items-stretch font-[Work Sans]">
+      {/* Fonts */}
       <style>
         {`
-          @keyframes blob {
-            0% {
-              transform: translate(0px, 0px) scale(1);
-            }
-            33% {
-              transform: translate(30px, -50px) scale(1.1);
-            }
-            66% {
-              transform: translate(-20px, 20px) scale(0.9);
-            }
-            100% {
-              transform: translate(0px, 0px) scale(1);
-            }
+          @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
+
+          .font-display { font-family: 'Fraunces', serif; font-optical-sizing: auto; }
+          .font-body { font-family: 'Work Sans', sans-serif; }
+          .font-tag { font-family: 'Space Mono', monospace; letter-spacing: 0.08em; }
+
+          @keyframes stitch-move {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: -24; }
           }
-          .animate-blob {
-            animation: blob 7s infinite;
+          .stitch-line {
+            stroke-dasharray: 6 6;
+            animation: stitch-move 2.5s linear infinite;
           }
-          .animation-delay-2000 {
-            animation-delay: 2s;
+          @keyframes tag-swing {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
           }
-          .animation-delay-4000 {
-            animation-delay: 4s;
+          .tag-swing {
+            transform-origin: top center;
+            animation: tag-swing 6s ease-in-out infinite;
+          }
+          .weave-bg {
+            background-image:
+              repeating-linear-gradient(45deg, rgba(184,145,47,0.06) 0px, rgba(184,145,47,0.06) 1px, transparent 1px, transparent 14px),
+              repeating-linear-gradient(-45deg, rgba(184,145,47,0.06) 0px, rgba(184,145,47,0.06) 1px, transparent 1px, transparent 14px);
           }
         `}
       </style>
+
+      {/* LEFT — brand panel */}
+      <div className="hidden lg:flex lg:w-[46%] relative overflow-hidden border-r border-[#3a322f]">
+        <img
+          src={bannerImg}
+          alt="Hayati Garments — Customized T-Shirts"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </div>
+
+      {/* RIGHT — the "swing tag" login card */}
+      <div className="flex-1 flex items-center justify-center bg-[#F1E9DC] relative p-6">
+        <div className="w-full max-w-sm tag-swing">
+          {/* punch hole + loop */}
+          <div className="flex justify-center -mb-1 relative z-10">
+            <svg width="64" height="40" viewBox="0 0 64 40">
+              <path
+                d="M12 30 Q12 4 32 4 Q52 4 52 30"
+                fill="none"
+                stroke="#8a1620"
+                strokeWidth="3"
+              />
+              <circle
+                cx="32"
+                cy="10"
+                r="6"
+                fill="#F1E9DC"
+                stroke="#221D1B"
+                strokeWidth="2"
+              />
+            </svg>
+          </div>
+
+          <div className="relative bg-[#FBF6EC] border border-[#221D1B]/15 shadow-[0_18px_40px_-12px_rgba(34,29,27,0.35)] rounded-sm rounded-tl-[3rem]">
+            {/* dashed stitch border, inset */}
+            <div className="absolute inset-[8px] border border-dashed border-[#B8912F]/50 rounded-sm rounded-tl-[2.6rem] pointer-events-none" />
+
+            <div className="relative p-10 pt-9">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <p className="font-tag text-[10px] text-[#A61B29] uppercase mb-1">
+                    Admin Access Only
+                  </p>
+                  <h2 className="font-display text-3xl text-[#221D1B]">
+                    Sign in
+                  </h2>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-[#A61B29] flex items-center justify-center shrink-0">
+                  <FaLock className="text-[#F1E9DC] text-sm" />
+                </div>
+              </div>
+
+              <form onSubmit={handleLogin} className="space-y-7">
+                {/* Username */}
+                <div className="relative">
+                  <div className="flex items-center gap-3 border-b border-[#221D1B]/25 focus-within:border-[#A61B29] transition-colors duration-300 pb-1">
+                    <FaUser className="text-[#8a1620]/60 text-sm shrink-0" />
+                    <div className="relative flex-1">
+                      <label
+                        className={`absolute left-0 font-tag uppercase transition-all duration-200 pointer-events-none ${
+                          isUsernameFocused || hasUsernameValue
+                            ? "-top-4 text-[9px] text-[#A61B29]"
+                            : "top-1 text-[11px] text-[#221D1B]/50"
+                        }`}
+                      >
+                        Username
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full pt-4 pb-1 bg-transparent outline-none font-body text-[#221D1B] text-sm"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        onFocus={() => setIsUsernameFocused(true)}
+                        onBlur={() => setIsUsernameFocused(false)}
+                        autoComplete="username"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div className="relative">
+                  <div className="flex items-center gap-3 border-b border-[#221D1B]/25 focus-within:border-[#A61B29] transition-colors duration-300 pb-1">
+                    <FaLock className="text-[#8a1620]/60 text-sm shrink-0" />
+                    <div className="relative flex-1">
+                      <label
+                        className={`absolute left-0 font-tag uppercase transition-all duration-200 pointer-events-none ${
+                          isPasswordFocused || hasPasswordValue
+                            ? "-top-4 text-[9px] text-[#A61B29]"
+                            : "top-1 text-[11px] text-[#221D1B]/50"
+                        }`}
+                      >
+                        Password
+                      </label>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        className="w-full pt-4 pb-1 bg-transparent outline-none font-body text-[#221D1B] text-sm"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onFocus={() => setIsPasswordFocused(true)}
+                        onBlur={() => setIsPasswordFocused(false)}
+                        autoComplete="current-password"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-[#221D1B]/40 hover:text-[#A61B29] transition-colors focus:outline-none shrink-0"
+                      tabIndex="-1"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <FaEyeSlash size={13} /> : <FaEye size={13} />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`w-full py-3.5 font-tag text-xs uppercase tracking-[0.15em] transition-all duration-300 rounded-sm relative overflow-hidden ${
+                    isLoading
+                      ? "bg-[#221D1B]/30 text-[#F1E9DC]/70 cursor-not-allowed"
+                      : "bg-[#A61B29] text-[#F1E9DC] hover:bg-[#8a1620] active:scale-[0.98]"
+                  }`}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg
+                        className="animate-spin h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Signing in
+                    </span>
+                  ) : (
+                    "Sign in"
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <p className="font-tag text-center text-[9px] text-[#221D1B]/40 uppercase mt-5">
+            Handle with care · GarmentsProject © {new Date().getFullYear()}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

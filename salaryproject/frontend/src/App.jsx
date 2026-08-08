@@ -18,7 +18,7 @@ import SalaryManagement from "./components/pages/salary/SalaryManagement";
 import BillGeneration from "./components/pages/bill/BillGenerationSimple";
 import TaxManagement from "./components/pages/tax/TaxManagement";
 import InvoiceManagement from "./components/pages/invoice/InvoiceManagement";
-
+import BalanceSheet from "./components/pages/customer/Customerbalancesheet";
 import "./App.css";
 import Login from "./components/pages/Login";
 
@@ -66,7 +66,7 @@ function App() {
             <Route path="/admin/bill" element={<BillGeneration />} />
             <Route path="/admin/tax" element={<TaxManagement />} />
             <Route path="/admin/invoice" element={<InvoiceManagement/>} />
-
+            <Route path="/admin/balancesheet" element={<BalanceSheet />} />
           </Route>
         </Routes>
       </div>
