@@ -34,9 +34,11 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.getenv(
     'ALLOWED_HOSTS',
-    'localhost,127.0.0.1','hayatigarments.onrender.com'
+    'localhost,127.0.0.1,hayatigarments.onrender.com'
 ).split(',')
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://hayatigarments.onrender.com",
+]
 AUTH_USER_MODEL = "App.TblUser"
 
 # Application definition
