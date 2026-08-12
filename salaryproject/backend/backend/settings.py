@@ -30,11 +30,12 @@ SECRET_KEY = os.getenv(
     'django-insecure-avswb5r1k1v4@it%l1h51hd(6uen2ckxev8o$(aa8rtme@$qnb'
 )
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.getenv(
     'ALLOWED_HOSTS',
-    'localhost,127.0.0.1'
+    'localhost,127.0.0.1',
+    'https://hayatigarments.onrender.com'
 ).split(',')
 
 AUTH_USER_MODEL = "App.TblUser"
