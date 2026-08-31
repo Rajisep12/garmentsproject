@@ -43,6 +43,9 @@ const InvoiceManagement = ({ data }) => {
   const invoiceRef = useRef();
   const [loading, setLoading] = useState(false);
 
+
+  console.log(bills);
+  
   const handleGeneratePDF = async (billId) => {
     setLoadingId(billId);
     try {
@@ -225,9 +228,6 @@ const InvoiceManagement = ({ data }) => {
             </div>
           </div>
         </div>
-        <svg width="100%" height="2" viewBox="0 0 400 2" className="opacity-70">
-          <line x1="0" y1="1" x2="400" y2="1" stroke="#B8912F" strokeWidth="1" className="inv-stitch-line" />
-        </svg>
       </div>
 
       {/* Invoice Ledger */}
@@ -237,7 +237,10 @@ const InvoiceManagement = ({ data }) => {
             <thead className="bg-gradient-to-r from-[#A61B29] to-[#8a1620]">
               <tr>
                 <th className="px-4 md:px-6 py-3 md:py-4 text-left inv-font-tag text-[10px] text-[#F1E9DC]/90 uppercase tracking-wider">
-                  Invoice ID
+                  S.No
+                </th>
+                <th className="px-4 md:px-6 py-3 md:py-4 text-left inv-font-tag text-[10px] text-[#F1E9DC]/90 uppercase tracking-wider">
+                  Invoice Date
                 </th>
                 <th className="px-4 md:px-6 py-3 md:py-4 text-left inv-font-tag text-[10px] text-[#F1E9DC]/90 uppercase tracking-wider">
                   Invoice No
@@ -301,12 +304,19 @@ const InvoiceManagement = ({ data }) => {
                     </td>
                     <td className="px-4 md:px-6 py-3 md:py-4">
                       <p className="inv-font-body text-sm font-semibold text-[#221D1B] truncate max-w-[150px] md:max-w-none">
+                        {bill.invoice_date
+                          ? new Date(bill.invoice_date).toLocaleDateString("en-GB")
+                          : ""}
+                      </p>
+                    </td>
+                    <td className="px-4 md:px-6 py-3 md:py-4">
+                      <p className="inv-font-body text-sm font-semibold text-[#221D1B] truncate max-w-[150px] md:max-w-none">
                         {bill.invoice_no}
                       </p>
                     </td>
                     <td className="px-4 md:px-6 py-3 md:py-4">
                       <p className="inv-font-tag text-xs md:text-sm text-[#221D1B]/80 truncate max-w-[100px] md:max-w-[150px] lg:max-w-none">
-                        {bill.customer || "No CGST Assigned"}
+                        {bill.customer || "Customer Not Found"}
                       </p>
                     </td>
                     <td className="px-4 md:px-6 py-3 md:py-4">

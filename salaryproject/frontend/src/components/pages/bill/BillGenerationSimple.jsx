@@ -171,6 +171,7 @@ const BillGenerationSimple = () => {
         try {
             const payload = {
                 ...newBill,
+                tax: newBill.tax ? Number(newBill.tax) : null,
 
                 // ✅ store calculated values
                 total_amt: totalAmount.toFixed(2),
@@ -180,12 +181,13 @@ const BillGenerationSimple = () => {
                 total_gst: grandTotal.toFixed(2),
 
                 items: items.map(item => ({
-                    ...item,
-                    qty: Number(item.qty),
-                    rate: Number(item.rate),
-                    discount: Number(item.discount),
-                    amt: Number(item.amount),
-                    total_amt: Number(item.total),
+                    product: item.product,
+                    hsn: item.hsn,
+                    qty: Number(item.qty || 0),
+                    rate: Number(item.rate || 0),
+                    amt: Number(item.amount || 0),
+                    discount: Number(item.discount || 0),
+                    total_amt: Number(item.total || 0),
                 })),
             };
             const response = await axios.post(
@@ -220,7 +222,9 @@ const BillGenerationSimple = () => {
                 } else if (error.response.status === 403) {
                     toast.error("You don't have permission to add employees.");
                 } else {
-                    toast.error("Failed to add employee. Please try again.");
+                    toast.error("Failed to generate bill. Please try again.");
+                    console.error("Error response:", error.response);
+                    console.log("Failed to generate bill. Please try again.Error response data:", error.response.data);
                 }
             } else if (error.request) {
                 toast.error("Network error. Please check your connection.");

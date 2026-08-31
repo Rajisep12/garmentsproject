@@ -43,6 +43,21 @@ class TblBillitemsSerializer(serializers.ModelSerializer):
         model = TblBillitems
         fields = '__all__'
 
+    def to_internal_value(self, data):
+        data = data.copy()
+
+        if 'amount' in data and 'amt' not in data:
+            data['amt'] = data.pop('amount')
+        elif 'amount' in data and 'amt' in data:
+            data.pop('amount')
+
+        if 'total' in data and 'total_amt' not in data:
+            data['total_amt'] = data.pop('total')
+        elif 'total' in data and 'total_amt' in data:
+            data.pop('total')
+
+        return super().to_internal_value(data)
+
 
     
 class TblBillSerializer(serializers.ModelSerializer):
@@ -52,8 +67,14 @@ class TblBillSerializer(serializers.ModelSerializer):
         model = TblBill
         fields = '__all__'
 
+    def to_internal_value(self, data):
+        data = data.copy()
+        if data.get('tax') in ('', None):
+            data['tax'] = None
+        return super().to_internal_value(data)
+
     def create(self, validated_data):
-        items_data = validated_data.pop('items')  # 👈 remove items
+        items_data = validated_data.pop('items', [])  # 👈 remove items
 
         bill = TblBill.objects.create(**validated_data)
 
