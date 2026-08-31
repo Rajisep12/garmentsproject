@@ -73,7 +73,8 @@ const BillGenerationSimple = () => {
         "Pant - Adult",
         "Pant - Kids",
         "Shorts",
-        "Forwarding & Packing"
+        "Forwarding & Packing",
+        "Trunks",
     ];
     const hsnOptions = ["998821", "998822","994422", "6109", "6111", "6112", "6107", "6108"];
     const libraries = ["places"];
