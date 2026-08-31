@@ -316,7 +316,7 @@ const InvoiceManagement = ({ data }) => {
                     </td>
                     <td className="px-4 md:px-6 py-3 md:py-4">
                       <p className="inv-font-tag text-xs md:text-sm text-[#221D1B]/80 truncate max-w-[100px] md:max-w-[150px] lg:max-w-none">
-                        {bill.customer || "Customer Not Found"}
+                        {bill.customer || "Customer Not Found"} 
                       </p>
                     </td>
                     <td className="px-4 md:px-6 py-3 md:py-4">
