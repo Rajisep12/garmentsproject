@@ -161,4 +161,4 @@ class TblBillitems(models.Model):
         db_table = 'app_tblbillitems'
        
     def __str__(self):
-        return self.description
+        return self.product or f"Bill Item #{self.id or 'new'}"

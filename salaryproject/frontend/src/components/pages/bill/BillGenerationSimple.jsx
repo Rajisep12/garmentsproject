@@ -168,6 +168,28 @@ const BillGenerationSimple = () => {
         //     return;
         // }
 
+        if (!newBill.customer) {
+            toast.error("Please select a customer.");
+            return;
+        }
+
+        const validItems = items.filter((item) => {
+            const product = (item.product || "").trim();
+            const hsn = (item.hsn || "").trim();
+            const qty = Number(item.qty || 0);
+            const rate = Number(item.rate || 0);
+            const amount = Number(item.amount || 0);
+            const discount = Number(item.discount || 0);
+            const total = Number(item.total || 0);
+
+            return product || hsn || qty || rate || amount || discount || total;
+        });
+
+        if (!validItems.length) {
+            toast.error("Please add at least one valid bill item.");
+            return;
+        }
+
         setIsAdding(true);
         try {
             const payload = {
@@ -181,9 +203,9 @@ const BillGenerationSimple = () => {
                 igst_amt: totalIGST.toFixed(2),
                 total_gst: grandTotal.toFixed(2),
 
-                items: items.map(item => ({
-                    product: item.product,
-                    hsn: item.hsn,
+                items: validItems.map(item => ({
+                    product: (item.product || "").trim(),
+                    hsn: (item.hsn || "").trim(),
                     qty: Number(item.qty || 0),
                     rate: Number(item.rate || 0),
                     amt: Number(item.amount || 0),
@@ -211,13 +233,11 @@ const BillGenerationSimple = () => {
             if (error.response) {
                 if (error.response.status === 400) {
                     const errorData = error.response.data;
-                    // if (errorData.name) {
-                    //     toast.error(errorData.name[0]);
-                    // } else if (errorData.detail) {
-                    //     toast.error(errorData.detail);
-                    // } else {
-                    //     toast.error("Validation error. Please check your input.");
-                    // }
+                    const firstError = typeof errorData === "object"
+                        ? Object.values(errorData).flat().find(Boolean)
+                        : errorData;
+
+                    toast.error(firstError || "Validation error. Please check your input.");
                 } else if (error.response.status === 401) {
                     toast.error("Unauthorized. Please login again.");
                 } else if (error.response.status === 403) {
@@ -385,7 +405,7 @@ const BillGenerationSimple = () => {
                     <div className="w-[120px]">
                         <label className="text-xs">Invoice Date</label>
                         <input type="date" className="input" value={newBill.invoice_date}
-                            onChange={(e) => setInvoiceDate(e.target.value)} />
+                            onChange={(e) => setNewBill(prev => ({ ...prev, invoice_date: e.target.value }))} />
                     </div>
 
                     {/* <div className="w-[50px]">

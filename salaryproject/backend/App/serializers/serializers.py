@@ -73,15 +73,56 @@ class TblBillSerializer(serializers.ModelSerializer):
             data['tax'] = None
         return super().to_internal_value(data)
 
+    def validate(self, attrs):
+        items = attrs.get('items', [])
+        valid_items = []
+
+        for item in items:
+            product = (item.get('product') or '').strip()
+            if product:
+                valid_items.append(item)
+
+        if not valid_items:
+            raise serializers.ValidationError({"items": ["At least one valid item is required."]})
+
+        attrs['items'] = valid_items
+        return attrs
+
     def create(self, validated_data):
-        items_data = validated_data.pop('items', [])  # 👈 remove items
+        items_data = validated_data.pop('items', [])
 
-        bill = TblBill.objects.create(**validated_data)
+        try:
+            # Create bill only once
+            bill = TblBill.objects.create(**validated_data)
+            print("bill created", bill)
 
-        for item in items_data:
-            TblBillitems.objects.create(
-                bill=bill,   # 👈 FK link
-                **item
-            )
+            # Create bill items
+            for index, item in enumerate(items_data):
 
-        return bill
+                # Ignore blank rows from frontend
+                if not (item.get('product') or '').strip():
+                    continue
+
+                try:
+                    TblBillitems.objects.create(
+                        bill=bill,
+                        **item
+                    )
+
+                except Exception as e:
+                    raise serializers.ValidationError({
+                        "items": {
+                            "row": index + 1,
+                            "error": str(e)
+                        }
+                    })
+
+            return bill
+
+        except serializers.ValidationError:
+            raise
+
+        except Exception as e:
+            raise serializers.ValidationError({
+                "error": str(e)
+            })
