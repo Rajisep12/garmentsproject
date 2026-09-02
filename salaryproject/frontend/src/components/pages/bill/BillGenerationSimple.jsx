@@ -48,7 +48,7 @@ const BillGenerationSimple = () => {
         transport_vehicle: "",
         cgst_amt: "0.0",
     });
-    
+
     const [items, setItems] = useState([
         {
             product: "",
@@ -76,7 +76,7 @@ const BillGenerationSimple = () => {
         "Forwarding & Packing",
         "Trunks",
     ];
-    const hsnOptions = ["998821", "998822","994422", "6109", "6111", "6112", "6107", "6108"];
+    const hsnOptions = ["998821", "998822", "994422", "6109", "6111", "6112", "6107", "6108"];
     const libraries = ["places"];
     const [autocomplete, setAutocomplete] = useState(null);
     const [formData, setFormData] = useState({
@@ -163,10 +163,7 @@ const BillGenerationSimple = () => {
 
     // Add new bill (POST request)
     const handleAddBill = async () => {
-        // if (!newEmployee.name.trim()) {
-        //     toast.error("Please enter employee name");
-        //     return;
-        // }
+        if (isAdding) return;
 
         if (!newBill.customer) {
             toast.error("Please select a customer.");
@@ -226,7 +223,9 @@ const BillGenerationSimple = () => {
 
             if (response.data) {
                 toast.success("Bill added successfully!");
-                //resetForm();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 800);
             }
         } catch (error) {
             console.error("Error adding BILL:", error);
@@ -606,10 +605,24 @@ const BillGenerationSimple = () => {
                         </button>
                         <button
                             onClick={handleAddBill}
-                            className="px-4 py-2 bg-red-600 text-white rounded-lg flex items-center gap-2"
+                            disabled={isAdding}
+                            aria-busy={isAdding}
+                            className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ${isAdding
+                                    ? "bg-red-400 text-white cursor-not-allowed opacity-80"
+                                    : "bg-red-600 text-white hover:bg-red-700 cursor-pointer"
+                                }`}
                         >
-                            <FaSave />
-                            Save Invoice
+                            {isAdding ? (
+                                <>
+                                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <FaSave />
+                                    Save Invoice
+                                </>
+                            )}
                         </button>
                     </div>
 
