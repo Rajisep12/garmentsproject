@@ -36,7 +36,7 @@ const BillGenerationSimple = () => {
         invoice_no: "",
         invoice_date: "",
         reverse_charge: false,
-        supply_date: "",
+        // supply_date: "",
         tax: "",
         place: "",
         cgst: "2.5",
@@ -44,8 +44,8 @@ const BillGenerationSimple = () => {
         igst: "0.0",
         // state:"",
         // code:"",
-        transport_mode: "Road",
-        transport_vehicle: "",
+        //transport_mode: "Road",
+        //transport_vehicle: "",
         cgst_amt: "0.0",
     });
 
@@ -307,6 +307,26 @@ const BillGenerationSimple = () => {
 
         return `HG-${paddedNumber}/${financialYear}`;
     };
+    const handleCustomerChange = (e) => {
+        const selectedCustomerId = e.target.value;
+        const selectedCustomer = customer.find((item) => String(item.id) === String(selectedCustomerId));
+
+        setNewBill((prev) => ({
+            ...prev,
+            customer: selectedCustomerId,
+            place: selectedCustomer?.city || selectedCustomer?.state || prev.place || "",
+            cgst: selectedCustomer?.cgst !== null && selectedCustomer?.cgst !== undefined
+                ? String(selectedCustomer.cgst)
+                : prev.cgst,
+            sgst: selectedCustomer?.sgst !== null && selectedCustomer?.sgst !== undefined
+                ? String(selectedCustomer.sgst)
+                : prev.sgst,
+            igst: selectedCustomer?.igst !== null && selectedCustomer?.igst !== undefined
+                ? String(selectedCustomer.igst)
+                : prev.igst,
+        }));
+    };
+
     const handleChange = (index, field, value) => {
         const updatedItems = [...items];
 
@@ -378,12 +398,7 @@ const BillGenerationSimple = () => {
                         <label className="text-xs">Customer</label>
                         <select
                             value={newBill.customer}
-                            onChange={(e) =>
-                                setNewBill(prev => ({
-                                    ...prev,
-                                    customer: e.target.value
-                                }))
-                            }
+                            onChange={handleCustomerChange}
                             className="w-full px-5 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
                             disabled={isAdding}
                         >
@@ -400,14 +415,14 @@ const BillGenerationSimple = () => {
                         <label className="text-xs">Invoice No</label>
                         <input className="input" placeholder="Invoice No" value={newBill.invoice_no} readOnly />
                     </div>
-
+                     
                     <div className="w-[120px]">
                         <label className="text-xs">Invoice Date</label>
                         <input type="date" className="input" value={newBill.invoice_date}
                             onChange={(e) => setNewBill(prev => ({ ...prev, invoice_date: e.target.value }))} />
                     </div>
-
-                    {/* <div className="w-[50px]">
+                     {/*         
+                     <div className="w-[50px]">
                         <label className="text-xs">Rev.Chg</label>
                         <select
                             className="input"
@@ -422,8 +437,7 @@ const BillGenerationSimple = () => {
                             <option value="false">N</option>
                             <option value="true">Y</option>
                         </select>
-                    </div> */}
-
+                    </div> 
                     <div className="w-[60px]">
                         <label className="text-xs">Transport</label>
                         <input className="input" placeholder="Road / Air" value={newBill.transport_mode} onChange={(e) =>
@@ -438,33 +452,19 @@ const BillGenerationSimple = () => {
                         } />
                     </div>
 
+
                     <div className="w-[120px]">
                         <label className="text-xs">Supply Date</label>
                         <input type="date" className="input" value={newBill.supply_date} onChange={(e) =>
                             setNewBill({ ...newBill, supply_date: e.target.value })
                         } />
-                    </div>
+                    </div>*/}
 
                     <div className="w-[120px]">
                         <label className="text-xs">Place</label>
                         <input type="text" className="input" value={newBill.place} onChange={(e) =>
                             setNewBill({ ...newBill, place: e.target.value })
                         } />
-                        {/* <select
-                            value={newBill.tax}
-                            onChange={(e) =>
-                                setNewBill({ ...newBill, tax: e.target.value })
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                            disabled={isAdding}
-                        >
-                            <option value="">Place</option>
-                            {place.map((place) => (
-                                <option key={place.id} value={place.id}>
-                                    {place.name}
-                                </option>
-                            ))}
-                        </select> */}
                     </div>
 
                     <div className="w-[50px]">
@@ -480,7 +480,7 @@ const BillGenerationSimple = () => {
                         } />
                     </div>
                     <div className="w-[50px]">
-                        <label className="text-xs">CGST</label>
+                        <label className="text-xs">IGST</label>
                         <input type="text" className="input" value={newBill.igst} onChange={(e) =>
                             setNewBill({ ...newBill, igst: e.target.value })
                         } />
