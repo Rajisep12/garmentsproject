@@ -10,6 +10,7 @@ import {
   FaArrowDown,
   FaWallet,
 } from "react-icons/fa";
+import { Eye } from "lucide-react";
 import { toast } from "react-toastify";
 
 /**
@@ -162,17 +163,15 @@ const CustomerBalanceSheet = () => {
             <span className="flex items-center gap-2 min-w-0">
               <FaUserCircle className="text-[#A61B29] shrink-0" />
               <span
-                className={`cb-font-body text-sm truncate ${
-                  selectedCustomer ? "text-[#221D1B] font-semibold" : "text-[#221D1B]/40"
-                }`}
+                className={`cb-font-body text-sm truncate ${selectedCustomer ? "text-[#221D1B] font-semibold" : "text-[#221D1B]/40"
+                  }`}
               >
                 {selectedCustomer ? selectedCustomer.name : "Choose a customer…"}
               </span>
             </span>
             <FaChevronDown
-              className={`text-[#221D1B]/40 text-xs shrink-0 transition-transform ${
-                dropdownOpen ? "rotate-180" : ""
-              }`}
+              className={`text-[#221D1B]/40 text-xs shrink-0 transition-transform ${dropdownOpen ? "rotate-180" : ""
+                }`}
             />
           </button>
 
@@ -199,11 +198,10 @@ const CustomerBalanceSheet = () => {
                     <button
                       key={c.id}
                       onClick={() => fetchBalanceSheet(c)}
-                      className={`w-full text-left px-4 py-2.5 text-sm cb-font-body hover:bg-[#A61B29]/5 transition-colors flex items-center justify-between ${
-                        selectedCustomer?.id === c.id
+                      className={`w-full text-left px-4 py-2.5 text-sm cb-font-body hover:bg-[#A61B29]/5 transition-colors flex items-center justify-between ${selectedCustomer?.id === c.id
                           ? "bg-[#A61B29]/10 text-[#A61B29] font-semibold"
                           : "text-[#221D1B]"
-                      }`}
+                        }`}
                     >
                       {c.name}
                     </button>
@@ -305,6 +303,9 @@ const CustomerBalanceSheet = () => {
                     <th className="px-4 md:px-6 py-3 text-right cb-font-tag text-[10px] text-[#F1E9DC]/90 uppercase tracking-wider">
                       Balance
                     </th>
+                    <th className="px-4 md:px-6 py-3 text-right cb-font-tag text-[10px] text-[#F1E9DC]/90 uppercase tracking-wider">
+                      Invoice
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-dashed divide-[#221D1B]/10">
@@ -326,6 +327,18 @@ const CustomerBalanceSheet = () => {
                         <td className="px-4 md:px-6 py-3 cb-font-tag text-xs text-right font-bold text-[#221D1B]">
                           {fmt(t.balance)}
                         </td>
+                        <td className="px-4 md:px-6 py-3 cb-font-tag text-xs text-right font-bold text-[#221D1B]">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              className="p-1 rounded hover:bg-gray-100 transition"
+                              onClick={() => handleView(t)}
+                            >
+                              <Eye size={16} strokeWidth={2} />
+                            </button>
+                          </div>
+                        </td>
+
                       </tr>
                     ))
                   ) : (

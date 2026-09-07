@@ -62,7 +62,10 @@ class TblBillitemsSerializer(serializers.ModelSerializer):
     
 class TblBillSerializer(serializers.ModelSerializer):
     items = TblBillitemsSerializer(many=True, write_only=True)
-
+    customer_name = serializers.CharField(
+        source='customer.name',
+        read_only=True
+    )
     class Meta:
         model = TblBill
         fields = '__all__'

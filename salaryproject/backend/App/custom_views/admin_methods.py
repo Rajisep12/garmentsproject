@@ -234,18 +234,16 @@ def order_list_create(request):
 @permission_classes([IsAuthenticated])
 def bill_list_create(request):  
 
-    if request.method == 'POST':
-        print("post")
-        print(request.data)
+    if request.method == 'POST':        
         serializer = TblBillSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+        if serializer.is_valid():            
+            ser = serializer.save()            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     search_query = request.GET.get('search', '')
     
-    queryset = TblBill.objects.all()
+    queryset = TblBill.objects.all().order_by('-id')
 
     if search_query:
         queryset = queryset.filter(invoice_no__icontains=search_query)
