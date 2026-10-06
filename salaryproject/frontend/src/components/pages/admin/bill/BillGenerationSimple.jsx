@@ -1,0 +1,708 @@
+import React, { useState, useEffect } from "react";
+import { BASE_URL } from "../../../../../config";
+import axios from "axios";
+import {
+    FaEdit,
+    FaTrash,
+    FaPlus,
+    FaSearch,
+    FaStore,
+    FaCheckCircle,
+    FaTools,
+    FaTimes,
+    FaSave,
+    FaBarcode,
+    FaDownload,
+    FaExclamationTriangle,
+    FaChevronLeft,
+    FaChevronRight,
+} from "react-icons/fa";
+import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
+import { toast } from "react-toastify";
+import { LoadScript, Autocomplete } from "@react-google-maps/api";
+
+const BillGenerationSimple = () => {
+    const [customer, setCustomer] = useState([]);
+    const [order, setOrder] = useState([]);
+    const [place, setPlace] = useState([]);
+    const [bill, setBill] = useState([]);
+    const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
+    const [customerToDelete, setCustomerToDelete] = useState(null);
+    const [editingCustomer, setEditingCustomer] = useState(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [newBill, setNewBill] = useState({
+        customer: "",
+        invoice_no: "",
+        invoice_date: "",
+        reverse_charge: false,
+        tax: "",
+        place: "",
+        cgst: "2.5",
+        sgst: "2.5",
+        igst: "0.0",
+        cgst_amt: "0.0",
+        dc_number: "",
+        // state:"",
+        // code:"",
+        //transport_mode: "Road",
+        //transport_vehicle: "",
+        // supply_date: "",
+    });
+
+    const [items, setItems] = useState([
+        {
+            product: "",
+            hsn: "",
+            qty: 1,
+            rate: 0,
+            amount: 0,
+            discount: 0,
+            total: 0,
+        },
+    ]);
+    const productOptions = [
+        "Round Neck Half Sleeve",
+        "Round Neck Full Sleeve",
+        "Polo Tshirt Half Sleeve",
+        "Polo Tshirt Full Sleeve",
+        "SweatShirt",
+        "Oversize Half Sleeve",
+        "Hoodie with Zipper",
+        "Hoodie without Zipper",
+        "Track Pant",
+        "Pant - Adult",
+        "Set - Kids",
+        "Top - Kids",
+        "Pant - Kids",
+        "Shorts",
+        "Forwarding & Packing",
+        "Trunks",
+    ];
+    const hsnOptions = ["998821", "998822", "994422", "6109", "6111", "6112", "6107", "6108"];
+    const libraries = ["places"];
+    const [autocomplete, setAutocomplete] = useState(null);
+    const [formData, setFormData] = useState({
+        place: "",
+        state: "",
+        district: "",
+    });
+    const onLoad = (autoC) => {
+        setAutocomplete(autoC);
+    };
+
+    useEffect(() => {
+        fetchCustomer();
+        fetchOrder();
+    }, []);
+
+    useEffect(() => {
+        const fetchInvoice = async () => {
+            try {
+                const res = await axios.get(`${BASE_URL}/admin/bill/last_invoice/`);
+                const lastInvoice = res.data.invoice_no;
+
+                const newInvoice = generateInvoiceNumber(lastInvoice);
+
+                setNewBill((prev) => ({
+                    ...prev,
+                    invoice_no: newInvoice,
+                }));
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchInvoice();
+    }, []);
+
+    // Fetch customer
+    const fetchCustomer = async () => {
+        setIsLoading(true);
+        try {
+            const response = await axios.get(
+                `${BASE_URL}/admin/customer/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("adminAccessToken")}`,
+                    },
+                }
+            );
+            setCustomer(response.data.results || []);
+
+        } catch (err) {
+            console.log(err);
+            setError("Error fetching Customer.");
+            //toast.error("Failed to load Customer. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Fetch order
+    const fetchOrder = async () => {
+        setIsLoading(true);
+        try {
+            const response = await axios.get(
+                `${BASE_URL}/admin/order/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("adminAccessToken")}`,
+                    },
+                }
+            );
+            setOrder(response.data.results || []);
+
+        } catch (err) {
+            console.log(err);
+            setError("Error fetching Order.");
+            //toast.error("Failed to load Order. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Add new bill (POST request)
+    const handleAddBill = async () => {
+        if (isAdding) return;
+
+        if (!newBill.customer) {
+            toast.error("Please select a customer.");
+            return;
+        }
+
+        const validItems = items.filter((item) => {
+            const product = (item.product || "").trim();
+            const hsn = (item.hsn || "").trim();
+            const qty = Number(item.qty || 0);
+            const rate = Number(item.rate || 0);
+            const amount = Number(item.amount || 0);
+            const discount = Number(item.discount || 0);
+            const total = Number(item.total || 0);
+
+            return product || hsn || qty || rate || amount || discount || total;
+        });
+
+        if (!validItems.length) {
+            toast.error("Please add at least one valid bill item.");
+            return;
+        }
+
+        setIsAdding(true);
+        try {
+            const payload = {
+                ...newBill,
+                tax: newBill.tax ? Number(newBill.tax) : null,
+
+                // ✅ store calculated values
+                total_amt: totalAmount.toFixed(2),
+                cgst_amt: totalCGST.toFixed(2),
+                sgst_amt: totalSGST.toFixed(2),
+                igst_amt: totalIGST.toFixed(2),
+                total_gst: grandTotal.toFixed(2),
+
+                items: validItems.map(item => ({
+                    product: (item.product || "").trim(),
+                    hsn: (item.hsn || "").trim(),
+                    qty: Number(item.qty || 0),
+                    rate: Number(item.rate || 0),
+                    amt: Number(item.amount || 0),
+                    discount: Number(item.discount || 0),
+                    total_amt: Number(item.total || 0),
+                })),
+            };
+            const response = await axios.post(
+                `${BASE_URL}/admin/bill/`,
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("adminAccessToken")}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (response.data) {
+                toast.success("Bill added successfully!");
+                setTimeout(() => {
+                    window.location.reload();
+                }, 800);
+            }
+        } catch (error) {
+            console.error("Error adding BILL:", error);
+            if (error.response) {
+                if (error.response.status === 400) {
+                    const errorData = error.response.data;
+                    const firstError = typeof errorData === "object"
+                        ? Object.values(errorData).flat().find(Boolean)
+                        : errorData;
+
+                    toast.error(firstError || "Validation error. Please check your input.");
+                } else if (error.response.status === 401) {
+                    toast.error("Unauthorized. Please login again.");
+                } else if (error.response.status === 403) {
+                    toast.error("You don't have permission to add employees.");
+                } else {
+                    toast.error("Failed to generate bill. Please try again.");
+                    console.error("Error response:", error.response);
+                    console.log("Failed to generate bill. Please try again.Error response data:", error.response.data);
+                }
+            } else if (error.request) {
+                toast.error("Network error. Please check your connection.");
+            } else {
+                //toast.error("An error occurred. Please try again.");
+            }
+        } finally {
+            setIsAdding(false);
+        }
+    };
+
+    const handleAddRow = () => {
+        setItems([
+            ...items,
+            {
+                product: "",
+                hsn: "",
+                qty: 1,
+                rate: 0,
+                amount: 0,
+                discount: 0,
+                total: 0,
+            },
+        ]);
+    };
+
+    const handleDeleteRow = (index) => {
+        const updatedItems = items.filter((_, i) => i !== index);
+        setItems(updatedItems);
+    };
+
+    const [invoiceDate, setInvoiceDate] = useState(() => {
+        const today = new Date();
+        return today.toISOString().split("T")[0]; // required format for input
+    });
+
+    const generateInvoiceNumber = (lastInvoice) => {
+        const now = new Date();
+
+        const year = now.getFullYear();
+        const nextYear = year + 1;
+
+        const shortYear = year.toString().slice(-2);
+        const shortNextYear = nextYear.toString().slice(-2);
+
+        const financialYear = `${shortYear}-${shortNextYear}`;
+
+        let nextNumber = 1;
+
+        if (lastInvoice) {
+            const prefix = lastInvoice.split("/")[0]; // HG-001
+            const numberPart = prefix.split("-")[1];  // "001"
+
+            // Remove leading zeros and increment
+            nextNumber = parseInt(numberPart, 10) + 1;
+        }
+
+        // Pad to 2 digits instead of 3
+        const paddedNumber = String(nextNumber).padStart(2, "0");
+
+        return `HG-${paddedNumber}/${financialYear}`;
+    };
+    const handleCustomerChange = (e) => {
+        const selectedCustomerId = e.target.value;
+        const selectedCustomer = customer.find((item) => String(item.id) === String(selectedCustomerId));
+
+        setNewBill((prev) => ({
+            ...prev,
+            customer: selectedCustomerId,
+            place: selectedCustomer?.city || selectedCustomer?.state || prev.place || "",
+            cgst: selectedCustomer?.cgst !== null && selectedCustomer?.cgst !== undefined
+                ? String(selectedCustomer.cgst)
+                : prev.cgst,
+            sgst: selectedCustomer?.sgst !== null && selectedCustomer?.sgst !== undefined
+                ? String(selectedCustomer.sgst)
+                : prev.sgst,
+            igst: selectedCustomer?.igst !== null && selectedCustomer?.igst !== undefined
+                ? String(selectedCustomer.igst)
+                : prev.igst,
+        }));
+    };
+
+    const handleDCChange = (e) => {
+        const selectedDCId = e.target.value;
+
+        const selectedOrder = order.find(
+            (item) => String(item.id) === String(selectedDCId)
+        );
+
+        if (!selectedOrder) {
+            setNewBill((prev) => ({
+                ...prev,
+                dc_number: "",
+                customer: "",
+                place: "",
+                cgst: "",
+                sgst: "",
+                igst: "",
+            }));
+            return;
+        }
+
+        console.log("Selected DC:", selectedOrder);
+
+        setNewBill((prev) => ({
+            ...prev,
+
+            // DC
+            dc_number: selectedDCId,
+            customer: selectedOrder.company_name
+                ? String(selectedOrder.company_name)
+                : "",
+            // Customer name
+            customer_name: selectedOrder.customer_name || "",
+            place:
+                selectedOrder.customer_city ||
+                selectedOrder.customer_state ||
+                prev.place ||
+                "",
+
+            // Tax values
+            cgst: selectedOrder.customer_cgst != null
+                ? String(selectedOrder.customer_cgst)
+                : "",
+
+            sgst: selectedOrder.customer_sgst != null
+                ? String(selectedOrder.customer_sgst)
+                : "",
+
+            igst: selectedOrder.customer_igst != null
+                ? String(selectedOrder.customer_igst)
+                : "",
+        }));
+    };
+
+    const handleChange = (index, field, value) => {
+        const updatedItems = [...items];
+
+        updatedItems[index][field] = value;
+
+        // ✅ Auto calculate amount
+        const qty = parseFloat(updatedItems[index].qty) || 0;
+        const rate = parseFloat(updatedItems[index].rate) || 0;
+        const amount = Number((qty * rate).toFixed(2));
+        updatedItems[index].amount = Number((qty * rate).toFixed(2));;
+
+        // ✅ total after discount (if any)
+
+        const discount = parseFloat(updatedItems[index].discount) || 0;
+        const total = Number((amount - discount).toFixed(2));
+        updatedItems[index].total = total;
+
+        setItems(updatedItems);
+    };
+
+    useEffect(() => {
+        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+        setNewBill(prev => ({
+            ...prev,
+            invoice_date: today, supply_date: today
+        }));
+
+    }, []);
+
+    const totalAmount = items.reduce((sum, item) => sum + (item.total || 0), 0);
+
+    const cgst = parseFloat(newBill.cgst) || 0;
+    const sgst = parseFloat(newBill.sgst) || 0;
+    const igst = parseFloat(newBill.igst) || 0;
+
+    const totalCGST = (totalAmount * cgst) / 100;
+    const totalSGST = (totalAmount * sgst) / 100;
+    const totalIGST = (totalAmount * igst) / 100;
+
+    const grandTotal = totalAmount + totalCGST + totalSGST + totalIGST;
+
+
+    return (
+        <div className="space-y-4 md:space-y-6 p-3 md:p-4 lg:p-6">
+            {/* Header */}
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex items-center space-x-3">
+                        <div className="p-2 md:p-3 bg-red-50 rounded-lg md:rounded-xl border border-red-100">
+                            <FaStore className="text-xl md:text-2xl text-red-600" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">
+                                Bill Generation
+                            </h1>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {/* Bill generate values */}
+
+            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 space-y-6">
+
+                {/* 🔹 Invoice Details */}
+                <div className="flex flex-wrap gap-3">
+
+
+                    <div className="w-[220px]">
+                        <label className="text-xs">DC</label>
+                        <select
+                            value={newBill.dc_number}
+                            onChange={handleDCChange}
+                            className="w-full px-5 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                            disabled={isAdding}
+                        >
+                            <option value="">DC</option>
+                            {order.map((order) => (
+                                <option key={order.id} value={order.id}>
+                                    {order.dc_number}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="w-[110px]">
+                        <label className="text-xs">Invoice No</label>
+                        <input className="input" placeholder="Invoice No" value={newBill.invoice_no} readOnly />
+                    </div>
+
+                    <div className="w-[120px]">
+                        <label className="text-xs">Invoice Date</label>
+                        <input type="date" className="input" value={newBill.invoice_date}
+                            onChange={(e) => setNewBill(prev => ({ ...prev, invoice_date: e.target.value }))} />
+                    </div>
+                    {/*         
+                     <div className="w-[50px]">
+                        <label className="text-xs">Rev.Chg</label>
+                        <select
+                            className="input"
+                            value={newBill.reverse_charge}
+                            onChange={(e) =>
+                                setNewBill({
+                                    ...newBill,
+                                    reverse_charge: e.target.value === "true"
+                                })
+                            }
+                        >
+                            <option value="false">N</option>
+                            <option value="true">Y</option>
+                        </select>
+                    </div> 
+                    <div className="w-[60px]">
+                        <label className="text-xs">Transport</label>
+                        <input className="input" placeholder="Road / Air" value={newBill.transport_mode} onChange={(e) =>
+                            setNewBill({ ...newBill, transport_mode: e.target.value })
+                        } />
+                    </div>
+
+                    <div className="w-[110px]">
+                        <label className="text-xs">Vehicle</label>
+                        <input className="input" value={newBill.transport_vehicle} onChange={(e) =>
+                            setNewBill({ ...newBill, transport_vehicle: e.target.value })
+                        } />
+                    </div>
+
+
+                    <div className="w-[120px]">
+                        <label className="text-xs">Supply Date</label>
+                        <input type="date" className="input" value={newBill.supply_date} onChange={(e) =>
+                            setNewBill({ ...newBill, supply_date: e.target.value })
+                        } />
+                    </div>*/}
+                    <div className="w-[220px]">
+                        <label className="text-xs">Customer</label>
+                        <input type="text" className="input" value={newBill.customer_name} onChange={(e) =>
+                            setNewBill({ ...newBill, customer_name: e.target.value })
+                        } />
+                    </div>
+                    
+                    <div className="w-[120px]">
+                        <label className="text-xs">Place</label>
+                        <input type="text" className="input" value={newBill.place} onChange={(e) =>
+                            setNewBill({ ...newBill, place: e.target.value })
+                        } />
+                    </div>
+
+                    <div className="w-[50px]">
+                        <label className="text-xs">CGST</label>
+                        <input type="text" className="input" value={newBill.cgst} onChange={(e) =>
+                            setNewBill({ ...newBill, cgst: e.target.value })
+                        } />
+                    </div>
+                    <div className="w-[50px]">
+                        <label className="text-xs">SGST</label>
+                        <input type="text" className="input" value={newBill.sgst} onChange={(e) =>
+                            setNewBill({ ...newBill, sgst: e.target.value })
+                        } />
+                    </div>
+                    <div className="w-[50px]">
+                        <label className="text-xs">IGST</label>
+                        <input type="text" className="input" value={newBill.igst} onChange={(e) =>
+                            setNewBill({ ...newBill, igst: e.target.value })
+                        } />
+                    </div>
+                    <div className="w-[220px]">
+                        <label className="text-xs" hidden={true}>Customer</label>
+                        <input type="text" className="input" value={newBill.customer} hidden={true} onChange={(e) =>
+                            setNewBill({ ...newBill, customer: e.target.value })
+                        } />
+                    </div>
+
+
+                </div>
+
+                {/* 🔹 Items Section */}
+                <div>
+                    <div className="flex justify-between items-center mb-2">
+                        <h2 className="text-md font-semibold">Items</h2>
+
+                        <button
+                            onClick={handleAddRow}
+                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+                        >
+                            <FaPlus /> Add
+                        </button>
+                    </div>
+
+                    {/* Header */}
+                    <div className="grid grid-cols-[220px_100px_70px_100px_120px_100px_120px] gap-2 text-xs font-semibold text-gray-600 border-b pb-2">
+                        <div>Description</div>
+                        <div>HSN/SAC</div>
+                        <div>Qty</div>
+                        <div>Rate</div>
+                        <div>Amount</div>
+                        <div>Discount</div>
+                        <div>Total</div>
+                        <div></div> {/* Delete column */}
+                    </div>
+
+                    {/* Rows */}
+                    <div className="space-y-2 mt-2 overflow-x-auto">
+                        {items.map((item, index) => (
+                            <div
+                                key={index}
+                                className="grid grid-cols-[220px_100px_70px_100px_120px_100px_120px_40px] gap-2 mt-2 items-center">
+
+                                <select
+                                    className="input"
+                                    value={item.product || ""}
+                                    onChange={(e) =>
+                                        handleChange(index, "product", e.target.value)
+                                    }
+                                >
+                                    <option value="">Select</option>
+                                    {productOptions.map((p, i) => (
+                                        <option key={i} value={p}>
+                                            {p}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <select
+                                    className="input"
+                                    value={item.hsn}
+                                    onChange={(e) => handleChange(index, "hsn", e.target.value)}
+                                >
+                                    <option value="">HSN</option>
+                                    {hsnOptions.map((hsn, i) => (
+                                        <option key={i} value={hsn}>
+                                            {hsn}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <input type="number" className="input" value={item.qty} onChange={(e) =>
+                                    handleChange(index, "qty", e.target.value)
+                                } />
+
+                                <input type="number" className="input" value={item.rate} onChange={(e) =>
+                                    handleChange(index, "rate", e.target.value)
+                                } />
+
+                                <input type="number" className="input bg-gray-100" value={item.amount} readOnly />
+
+                                <input type="number" className="input" value={item.discount} onChange={(e) =>
+                                    handleChange(index, "discount", e.target.value)
+                                } />
+
+                                <input type="number" className="input bg-gray-100" value={item.total} readOnly />
+
+                                {/* ❌ Delete Button */}
+                                <button
+                                    onClick={() => handleDeleteRow(index)}
+                                    className="text-red-500 hover:text-red-700 flex justify-center"
+                                >
+                                    <FaTimes />
+                                </button>
+
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* 🔹 Footer Buttons */}
+                <div className="flex justify-between items-center pt-4 border-t">
+
+                    {/* LEFT SIDE */}
+                    <div className="text-right space-y-1">
+                        <div>Total: ₹ {totalAmount.toFixed(2)}</div>
+
+                        {parseFloat(newBill.igst) > 0 ? (
+                            <div>IGST: ₹ {totalIGST.toFixed(2)}</div>
+                        ) : (
+                            <>
+                                <div>CGST: ₹ {totalCGST.toFixed(2)}</div>
+                                <div>SGST: ₹ {totalSGST.toFixed(2)}</div>
+                            </>
+                        )}
+
+                        <div className="font-bold text-lg">
+                            Grand Total: ₹ {grandTotal.toFixed(2)}
+                        </div>
+                    </div>
+
+                    {/* RIGHT SIDE */}
+                    <div className="flex gap-3">
+                        <button className="px-4 py-2 bg-gray-200 rounded-lg">
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleAddBill}
+                            disabled={isAdding}
+                            aria-busy={isAdding}
+                            className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-200 ${isAdding
+                                ? "bg-red-400 text-white cursor-not-allowed opacity-80"
+                                : "bg-red-600 text-white hover:bg-red-700 cursor-pointer"
+                                }`}
+                        >
+                            {isAdding ? (
+                                <>
+                                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <FaSave />
+                                    Save Invoice
+                                </>
+                            )}
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+
+
+        </div>
+    );
+};
+
+export default BillGenerationSimple;

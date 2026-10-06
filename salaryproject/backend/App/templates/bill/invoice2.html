@@ -391,13 +391,11 @@
                 <td>GSTIN: {{ invoice.customer.gst|default:"" }}</td>
                 <td>GSTIN: {{ invoice.customer.gst|default:"" }}</td>
             </tr>
-            <tr class="party-table">
-                <td>State: Tamilnadu &nbsp; Code: 33</td>
-                <td>State: Tamilnadu &nbsp; Code: 33 </td>
-                <!-- <td>State: {{ invoice.customer.state|default:"Tamil Nadu" }} &nbsp; Code: {{
-                    invoice.bill_state_code|default:"33" }}</td>
-                <td>State: {{ invoice.customer.state|default:"Tamil Nadu" }} &nbsp; Code: {{
-                    invoice.ship_state_code|default:"33" }}</td> -->
+            <tr class="party-table">               
+                <td>State: {{ invoice.customer.state|default:"Tamil Nadu" }} &nbsp; 
+                    Code: {{ invoice.customer.state_code|default:"33" }}</td>
+                <td>State: {{ invoice.customer.state|default:"Tamil Nadu" }} &nbsp; 
+                    Code: {{ invoice.customer.state_code|default:"33" }}</td>
             </tr>
         </table>
 

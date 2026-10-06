@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { BASE_URL } from "../../../../config";
+import { BASE_URL } from "../../../../../config";
 import axios from "axios";
 import {
   FaEdit,
@@ -20,7 +20,7 @@ import {
 import { MdOutlineKeyboardDoubleArrowLeft, MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
 import { toast } from "react-toastify";
 import html2pdf from "html2pdf.js";
-import { generateInvoiceHTML } from "../../../utils/invoiceTemplate";
+import { generateInvoiceHTML } from "../../../../utils/invoiceTemplate";
 // import "./Invoice.css";
 
 
@@ -41,10 +41,7 @@ const InvoiceManagement = ({ data }) => {
   });
 
   const invoiceRef = useRef();
-  const [loading, setLoading] = useState(false);
-
-
-  console.log(bills);
+  const [loading, setLoading] = useState(false);  
   
   const handleGeneratePDF = async (billId) => {
     setLoadingId(billId);

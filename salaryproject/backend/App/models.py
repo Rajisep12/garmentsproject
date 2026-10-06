@@ -64,6 +64,7 @@ class TblCustomer(models.Model):
     street_address = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
+    state_code = models.CharField(max_length=10, null=True, blank=True)
     zip_code = models.CharField(max_length=20)
     mobile = models.CharField(max_length=10,null=True)
     gst = models.CharField(max_length=100,blank=True,null=True)
@@ -120,6 +121,7 @@ class TblOrder(models.Model):
 class TblBill(models.Model):
     customer = models.ForeignKey(TblCustomer, on_delete=models.CASCADE,null=True, blank=True,related_name='TblBill_customer')
     invoice_no = models.CharField(max_length=100)
+    dc_number = models.ForeignKey(TblOrder, on_delete=models.CASCADE,null=True, blank=True,related_name='TblBill_dc_number')
     invoice_date = models.DateField(null=True, blank=True)
     reverse_charge = models.BooleanField(default=False)  
     transport_mode = models.CharField(max_length=100,null=True, blank=True)
@@ -162,3 +164,25 @@ class TblBillitems(models.Model):
        
     def __str__(self):
         return self.product or f"Bill Item #{self.id or 'new'}"
+
+
+class TblPayment(models.Model):
+    customer = models.ForeignKey(TblCustomer, on_delete=models.CASCADE,null=True, blank=True,related_name='TblPayment_customer')
+    bill = models.ForeignKey(TblBill, on_delete=models.CASCADE,null=True, blank=True,related_name='TblPayment_bill')
+    invoice_no = models.CharField(max_length=100,null=True, blank=True)
+    cheque_no = models.CharField(max_length=100)
+    bank_name = models.CharField(max_length=100)
+    payment_date = models.DateField(null=True, blank=True)
+    payment_amount = models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True) 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)  
+    deleted_at = models.DateTimeField(auto_now_add=True)
+    
+    
+    class Meta:
+        db_table = 'app_tblpayment'
+       
+    def __str__(self):
+        return self.cheque_no or f"Payment #{self.id or 'new'}"
+

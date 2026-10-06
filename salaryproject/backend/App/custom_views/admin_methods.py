@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated,AllowAny
 from django.db.models import Q
-from App.models import (TblEmployee,TblUser,TblCustomer,TblOrder,TblTax,TblBill)
-from App.serializers.serializers import ( TblTaxSerializer,TblEmployeeSerializer, TblOrderSerializer,TblCustomerSerializer,TblUserSerializer,TblCustomerSerializer,TblOrderSerializer,TblBillSerializer)
+from App.models import (TblEmployee,TblUser,TblCustomer,TblOrder,TblTax,TblBill,TblPayment,TblBillitems)
+from App.serializers.serializers import ( TblTaxSerializer,TblEmployeeSerializer, TblOrderSerializer,TblCustomerSerializer,TblUserSerializer,TblCustomerSerializer,TblOrderSerializer,TblBillSerializer,TblPaymentSerializer,TblBillitemsSerializer)
 from django.conf import settings
 from rest_framework.pagination import PageNumberPagination
 from django.core.cache import cache
@@ -110,7 +110,7 @@ def customer_list_create(request):
     search_query = request.GET.get('search', '')
     fetch_all = request.GET.get('all', 'false').lower() == 'true'
 
-    queryset = TblCustomer.objects.filter(is_deleted=False)
+    queryset = TblCustomer.objects.filter(is_deleted=False).order_by('id')
 
     if search_query:
         queryset = queryset.filter(name__icontains=search_query)
@@ -161,7 +161,7 @@ def tax_list_create(request):
     search_query = request.GET.get('search', '')
     fetch_all = request.GET.get('all', 'false').lower() == 'true'
 
-    queryset = TblTax.objects.filter(is_deleted=False)
+    queryset = TblTax.objects.filter(is_deleted=False).order_by('-id')
 
     if search_query:
         queryset = queryset.filter(name__icontains=search_query)
@@ -196,6 +196,57 @@ def tax_update_delete(request, pk):
     instance.is_deleted = True
     instance.save()
     return Response({"message": "Tax deleted"}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def payment_list_create(request):  
+
+    if request.method == 'POST':
+        serializer = TblPaymentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    search_query = request.GET.get('search', '')
+    fetch_all = request.GET.get('all', 'false').lower() == 'true'
+
+    queryset = TblPayment.objects.filter(is_deleted=False).order_by('-id')
+
+    # if search_query:
+    #     queryset = queryset.filter(name__icontains=search_query)
+
+    # ✅ If all=true return full list
+    if fetch_all:
+        serializer = TblPaymentSerializer(queryset, many=True)
+        return Response({
+            "count": queryset.count(),
+            "results": serializer.data
+        })
+
+    # ✅ Default pagination
+    page = paginator.paginate_queryset(queryset, request)
+    serializer = TblPaymentSerializer(page, many=True)
+    return paginator.get_paginated_response(serializer.data)
+    
+@api_view(['PUT', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def payment_update_delete(request, pk):
+    instance = get_object_or_404(TblPayment, pk)
+    if not instance:
+        return Response({"error": "Payment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method in ['PUT', 'PATCH']:
+        serializer = TblPaymentSerializer(instance, data=request.data, partial=(request.method == 'PATCH'))
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    instance.is_deleted = True
+    instance.save()
+    return Response({"message": "Payment deleted"}, status=status.HTTP_200_OK)
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -298,12 +349,22 @@ def generate_invoice_pdf(request, invoice_id):
         invoice = TblBill.objects.get(id=invoice_id)
         print(f"✅ Invoice found: {invoice.id}")
     except TblBill.DoesNotExist:
-        return HttpResponse(f"Invoice {invoice_id} not found", status=404)
+        return HttpResponse(
+            f"Invoice {invoice_id} not found",
+            status=404
+        )
+
+    # Convert "/" to "_" for a safe filename
+    safe_invoice_no = invoice.invoice_no.replace("/", "_")
+
+    print(f"Invoice No: {invoice.invoice_no}")
+    print(f"Safe Invoice No: {safe_invoice_no}")
 
     copies = [
-        ('Original Copy',   f'invoice_{invoice.invoice_no}_originalcopy.pdf'),
-        #('Duplicate Copy',  f'invoice_{invoice.id}_duplicatecopy.pdf'),
-        #('Triplicate Copy', f'invoice_{invoice.id}_triplicatecopy.pdf'),
+        (
+            'Original Copy',
+            f'invoice_{safe_invoice_no}_originalcopy.pdf'
+        ),
     ]
 
     pdf_files = {}
@@ -311,17 +372,29 @@ def generate_invoice_pdf(request, invoice_id):
     for copy_label, filename in copies:
         try:
             print(f"⏳ Rendering: {copy_label}")
-            html_string = render_to_string('bill/invoice2.html', {
-                'invoice': invoice,
-                'copy_label': copy_label,
-            })
-            print(f"✅ HTML rendered for {copy_label}, length: {len(html_string)}")
+
+            html_string = render_to_string(
+                'bill/invoice2.html',
+                {
+                    'invoice': invoice,
+                    'copy_label': copy_label,
+                }
+            )
+
+            print(
+                f"✅ HTML rendered for {copy_label}, "
+                f"length: {len(html_string)}"
+            )
 
             pdf_bytes = HTML(
                 string=html_string,
                 base_url=request.build_absolute_uri('/')
             ).write_pdf()
-            print(f"✅ PDF generated for {copy_label}, size: {len(pdf_bytes)} bytes")
+
+            print(
+                f"✅ PDF generated for {copy_label}, "
+                f"size: {len(pdf_bytes)} bytes"
+            )
 
             pdf_files[filename] = pdf_bytes
 
@@ -329,118 +402,67 @@ def generate_invoice_pdf(request, invoice_id):
             print(f"❌ Error generating {copy_label}: {e}")
             import traceback
             traceback.print_exc()
-            return HttpResponse(f"Error generating {copy_label}: {str(e)}", status=500)
+
+            return HttpResponse(
+                f"Error generating {copy_label}: {str(e)}",
+                status=500
+            )
 
     # Build ZIP
     try:
         zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+
+        with zipfile.ZipFile(
+            zip_buffer,
+            'w',
+            zipfile.ZIP_DEFLATED
+        ) as zip_file:
+
             for filename, pdf_bytes in pdf_files.items():
                 zip_file.writestr(filename, pdf_bytes)
+
         zip_buffer.seek(0)
+
         zip_size = len(zip_buffer.getvalue())
+
         print(f"✅ ZIP created, size: {zip_size} bytes")
+
     except Exception as e:
         print(f"❌ ZIP error: {e}")
-        return HttpResponse(f"ZIP error: {str(e)}", status=500)
+        return HttpResponse(
+            f"ZIP error: {str(e)}",
+            status=500
+        )
 
-    # Save original to DB
+    # Save original PDF to DB
     try:
-        original_filename = f'invoice_{invoice.invoice_no}_originalcopy.pdf'
+        original_filename = (
+            f'invoice_{safe_invoice_no}_originalcopy.pdf'
+        )
+
         invoice.pdf_file.save(
             original_filename,
             io.BytesIO(pdf_files[original_filename]),
             save=True
         )
+
         print(f"✅ Saved to DB: {original_filename}")
+
     except Exception as e:
         print(f"❌ DB save error: {e}")
 
-    response = HttpResponse(zip_buffer, content_type='application/zip')
-    response['Content-Disposition'] = f'attachment; filename="invoice_{invoice.id}_copies.zip"'
-    response['Content-Length'] = zip_size
-    print(f"✅ Sending ZIP response")
-    return response
-    
-# def generate_invoice_pdf3(request, invoice_id):
-#     invoice = TblBill.objects.get(id=invoice_id)
-
-#     copies = [
-#         ('Original Copy',   f'invoice_{invoice.id}_originalcopy.pdf'),
-#         ('Duplicate Copy',  f'invoice_{invoice.id}_duplicatecopy.pdf'),
-#         ('Triplicate Copy', f'invoice_{invoice.id}_triplicatecopy.pdf'),
-#     ]
-
-#     font_config = FontConfiguration()
-#     pdf_files = {}
-
-#     for copy_label, filename in copies:
-#         # Pass copy_label into template so it can be shown on the PDF
-#         html_string = render_to_string('bill/invoice2.html', {
-#             'invoice': invoice,
-#             'copy_label': copy_label,
-#         })
-
-#         pdf_bytes = HTML(
-#             string=html_string,
-#             base_url=request.build_absolute_uri('/')
-#         ).write_pdf(font_config=font_config)
-
-#         pdf_files[filename] = pdf_bytes
-
-#     # Save only the Original Copy to DB
-#     original_filename = f'invoice_{invoice.id}_originalcopy.pdf'
-#     invoice.pdf_file.save(
-#         original_filename,
-#         io.BytesIO(pdf_files[original_filename]),
-#         save=True  # saves the model record
-#     )
-
-#     # Create a ZIP with all 3 PDFs for download
-#     zip_buffer = io.BytesIO()
-#     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-#         for filename, pdf_bytes in pdf_files.items():
-#             zip_file.writestr(filename, pdf_bytes)
-#     zip_buffer.seek(0)
-
-#     response = HttpResponse(zip_buffer, content_type='application/zip')
-#     response['Content-Disposition'] = f'attachment; filename="invoice_{invoice.id}_copies.zip"'
-#     return response
-
-# def generate_invoice_pdf1(request, invoice_id):
-#     print("id")
-#     print(invoice_id)
-#     invoice = TblBill.objects.get(id=invoice_id)
-#     html_string = render_to_string('bill/invoice2.html', {'invoice': invoice})
-
-#     result = io.BytesIO()
-#     pisa_status = pisa.CreatePDF(html_string, dest=result)
-    
-#     if pisa_status.err:
-#         return HttpResponse('Error generating PDF', status=500)
-
-#     # Save PDF to model
-#     invoice.pdf_file.save(f'invoice_{invoice.id}.pdf', io.BytesIO(result.getvalue()))
-#     return HttpResponse('PDF Generated and Saved!')
-
-
-# def generate_invoice_pdf2(request, invoice_id):
-    invoice = TblBill.objects.get(id=invoice_id)
-    
-    html_string = render_to_string('bill/invoice2.html', {'invoice': invoice})
-    
-    font_config = FontConfiguration()
-    
-    # Generate PDF using WeasyPrint
-    pdf_file = HTML(
-        string=html_string,
-        base_url=request.build_absolute_uri('/')  # allows relative URLs to resolve
-    ).write_pdf(font_config=font_config)
-    
-    # Save to model
-    invoice.pdf_file.save(
-        f'invoice_{invoice.id}.pdf',
-        io.BytesIO(pdf_file)
+    response = HttpResponse(
+        zip_buffer,
+        content_type='application/zip'
     )
-    
-    return HttpResponse('PDF Generated and Saved!')
+
+    response['Content-Disposition'] = (
+        f'attachment; '
+        f'filename="invoice_{safe_invoice_no}_copies.zip"'
+    )
+
+    response['Content-Length'] = zip_size
+
+    print("✅ Sending ZIP response")
+
+    return response

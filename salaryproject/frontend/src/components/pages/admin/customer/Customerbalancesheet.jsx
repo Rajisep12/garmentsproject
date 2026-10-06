@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { BASE_URL } from "../../../../config";
+import { BASE_URL } from "../../../../../config";
 import axios from "axios";
 import {
   FaSearch,
@@ -38,6 +38,7 @@ import { toast } from "react-toastify";
 
 const CustomerBalanceSheet = () => {
   const [customers, setCustomers] = useState([]);
+  const [payment, setPayment] = useState([]);
   const [isLoadingCustomers, setIsLoadingCustomers] = useState(false);
 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -83,6 +84,29 @@ const CustomerBalanceSheet = () => {
     }
   };
 
+  // Fetch payments
+  const fetchPayment = async (page, search) => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/admin/payment/`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminAccessToken")}`,
+          },
+        }
+      );
+      setPayment(response.data.results || []);
+
+    } catch (err) {
+      console.log(err);
+      setError("Error fetching Payment.");
+      //toast.error("Failed to load Payment. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const fetchBalanceSheet = async (customer) => {
     setSelectedCustomer(customer);
     setDropdownOpen(false);
@@ -117,6 +141,14 @@ const CustomerBalanceSheet = () => {
       currency: "INR",
       maximumFractionDigits: 2,
     });
+
+  const handleView = (transaction) => {
+    if (!transaction.pdf_url) {
+      toast.info("No invoice PDF available for this record.");
+      return;
+    }
+    window.open(transaction.pdf_url, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <div className="space-y-6 p-3 md:p-4 lg:p-6 bg-[#F1E9DC] min-h-screen">
@@ -199,8 +231,8 @@ const CustomerBalanceSheet = () => {
                       key={c.id}
                       onClick={() => fetchBalanceSheet(c)}
                       className={`w-full text-left px-4 py-2.5 text-sm cb-font-body hover:bg-[#A61B29]/5 transition-colors flex items-center justify-between ${selectedCustomer?.id === c.id
-                          ? "bg-[#A61B29]/10 text-[#A61B29] font-semibold"
-                          : "text-[#221D1B]"
+                        ? "bg-[#A61B29]/10 text-[#A61B29] font-semibold"
+                        : "text-[#221D1B]"
                         }`}
                     >
                       {c.name}
@@ -292,7 +324,7 @@ const CustomerBalanceSheet = () => {
                       Date
                     </th>
                     <th className="px-4 md:px-6 py-3 text-left cb-font-tag text-[10px] text-[#F1E9DC]/90 uppercase tracking-wider">
-                      Description
+                      Invoice
                     </th>
                     <th className="px-4 md:px-6 py-3 text-right cb-font-tag text-[10px] text-[#F1E9DC]/90 uppercase tracking-wider">
                       Debit

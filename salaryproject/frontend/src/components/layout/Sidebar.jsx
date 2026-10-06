@@ -74,7 +74,7 @@ const Sidebar = () => {
       name: "Salary ",
       icon: <FaWarehouse />,
       badge: null,
-    },
+    },    
     {
       path: "/admin/bill",
       name: "Bill",
@@ -85,6 +85,12 @@ const Sidebar = () => {
       path: "/admin/invoice",
       name: "Invoice",
       icon: <FaFileAlt />,
+      badge: null,
+    },
+    {
+      path: "/admin/payment",
+      name: "Payment ",
+      icon: <FaWarehouse />,
       badge: null,
     },
     {
@@ -264,6 +270,17 @@ const Sidebar = () => {
           {!isCollapsed || isMobile ? (
             <div className="space-y-2">
               <NavLink
+                to="/website"
+                target="_blank"
+                rel="noreferrer"
+                className="block"
+              >
+                <button className="w-full sb-font-tag text-[11px] uppercase tracking-wider flex items-center px-4 py-2 text-[#F1E9DC] bg-[#B8912F]/20 hover:bg-[#B8912F]/30 hover:text-white rounded-sm transition-colors border border-[#B8912F]/40">
+                  <FaHome className="mr-3 text-amber-400" size={12} />
+                  <span>View Website</span>
+                </button>
+              </NavLink>
+              <NavLink
                 to="/login"
                 onClick={() => {
                   if (isMobile) setIsMobileOpen(false);
@@ -277,6 +294,12 @@ const Sidebar = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center space-y-2">
+              <NavLink to="/website" target="_blank" rel="noreferrer" className="p-2 text-[#F1E9DC] hover:bg-[#2A2422] rounded-sm relative group">
+                <FaHome size={14} className="text-amber-400" />
+                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#F1E9DC] text-[#221D1B] sb-font-tag text-[10px] uppercase rounded-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-20">
+                  View Website
+                </div>
+              </NavLink>
               <button className="p-2 text-[#a89a91] hover:bg-[#2A2422] hover:text-[#A61B29] rounded-sm transition-colors relative group">
                 <FaSignOutAlt size={14} />
                 <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#F1E9DC] text-[#221D1B] sb-font-tag text-[10px] uppercase rounded-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-20">

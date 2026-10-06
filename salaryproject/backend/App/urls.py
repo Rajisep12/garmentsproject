@@ -24,6 +24,10 @@ urlpatterns = [
     path('admin/order/', admin_methods.order_list_create, name='order-list-create'),
     #path('admin/order/<int:pk>/', admin_methods.customer_update_delete, name='customer-update-delete'),
 
+    # Payment
+    path('admin/payment/', admin_methods.payment_list_create, name='payment-list-create'),
+    path('admin/payment/<int:pk>/', admin_methods.payment_update_delete, name='payment-update-delete'),
+    
     # Bill
     path('admin/bill/', admin_methods.bill_list_create, name='bill-list-create'),
     path('admin/bill/<int:pk>/', admin_methods.bill_update_delete, name='bill-update-delete'),

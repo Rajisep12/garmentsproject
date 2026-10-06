@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from App.models import (TblUser,TblEmployee,TblCustomer,TblOrder,TblTax,TblBill,TblBillitems)
+from App.models import (TblUser,TblEmployee,TblCustomer,TblOrder,TblTax,TblPayment,TblBill,TblBillitems)
 import re
 
 class TblUserSerializer(serializers.ModelSerializer):
@@ -31,12 +31,48 @@ class TblTaxSerializer(serializers.ModelSerializer):
 
       
 class TblOrderSerializer(serializers.ModelSerializer):
+    customer_name = serializers.CharField(
+        source='company_name.name',
+        read_only=True
+    )
+    customer_city = serializers.CharField(
+        source='company_name.city',
+        read_only=True
+    )
+    customer_cgst = serializers.DecimalField(
+        source='company_name.cgst',
+        max_digits=5,
+        decimal_places=2,
+        read_only=True
+    )
+
+    customer_sgst = serializers.DecimalField(
+        source='company_name.sgst',
+        max_digits=5,
+        decimal_places=2,
+        read_only=True
+    )
+
+    customer_igst = serializers.DecimalField(
+        source='company_name.igst',
+        max_digits=5,
+        decimal_places=2,
+        read_only=True
+    )
 
     class Meta:
         model = TblOrder
-        fields = '__all__'
+        fields = [
+            'id',
+            'dc_number',
+            'company_name',
+            'customer_city',
+            'customer_name',
+            'customer_cgst',
+            'customer_sgst',
+            'customer_igst',
+        ]
 
-    
 class TblBillitemsSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -129,3 +165,14 @@ class TblBillSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 "error": str(e)
             })
+
+
+class TblPaymentSerializer(serializers.ModelSerializer):
+    bill = TblBillSerializer(read_only=True)
+    customer_name = serializers.CharField(
+        source='customer.name',
+        read_only=True
+    )
+    class Meta:
+        model = TblPayment
+        fields = '__all__'

@@ -37,7 +37,8 @@ ALLOWED_HOSTS = os.getenv(
     'localhost,127.0.0.1,hayati-garments-backend.onrender.com'
 ).split(',')
 CSRF_TRUSTED_ORIGINS = [
-    "https://hayati-garments-backend.onrender.com",
+    # "https://hayati-garments-backend.onrender.com",
+    "http://127.0.0.1:8000/"
 ]
 AUTH_USER_MODEL = "App.TblUser"
 

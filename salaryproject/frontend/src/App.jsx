@@ -9,68 +9,110 @@ import {
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// Admin Imports (moved into pages/admin)
 import Layout from "./components/layout/Layout";
 import Dashboard from "./components/pages/Dashboard";
-import EmployeeManagement from "./components/pages/employee/EmployeeManagement";
-import CustomerManagement from "./components/pages/customer/CustomerManagement";
-import OrderManagement from "./components/pages/order/OrderManagement";
-import SalaryManagement from "./components/pages/salary/SalaryManagement";
-import BillGeneration from "./components/pages/bill/BillGenerationSimple";
-import TaxManagement from "./components/pages/tax/TaxManagement";
-import InvoiceManagement from "./components/pages/invoice/InvoiceManagement";
-import BalanceSheet from "./components/pages/customer/Customerbalancesheet";
-import "./App.css";
+import EmployeeManagement from "./components/pages/admin/employee/EmployeeManagement";
+import CustomerManagement from "./components/pages/admin/customer/CustomerManagement";
+import OrderManagement from "./components/pages/admin/order/OrderManagement";
+import SalaryManagement from "./components/pages/admin/salary/SalaryManagement";
+import BillGeneration from "./components/pages/admin/bill/BillGenerationSimple";
+import TaxManagement from "./components/pages/admin/tax/TaxManagement";
+import InvoiceManagement from "./components/pages/admin/invoice/InvoiceManagement";
+import BalanceSheet from "./components/pages/admin/customer/Customerbalancesheet";
+import PaymentManagement from "./components/pages/admin/payment/PaymentManagement";
 import Login from "./components/pages/Login";
+
+// Website Imports
+import { CartProvider } from "./context/CartContext";
+import WebsiteLayout from "./components/website/WebsiteLayout";
+import Home from "./pages/website/Home";
+import Products from "./pages/website/Products";
+import Services from "./pages/website/Services";
+import About from "./pages/website/About";
+import Contact from "./pages/website/Contact";
+import CartPage from "./pages/website/CartPage";
+
+import "./App.css";
 
 // Token validation function
 const isTokenValid = () => {
   const token = localStorage.getItem("adminAccessToken");
-  return !!token; // Returns true if token exists, false if not
+  return !!token;
 };
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check authentication status when app loads
     setIsAuthenticated(isTokenValid());
   }, []);
 
   return (
-    <Router>
-      <div className="App">
-        <ToastContainer
-          position="top-right"
-          autoClose={2000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          pauseOnHover
-        />
-
-        <Routes>
-          <Route
-            path="/login"
-            element={<Login setIsAuthenticated={setIsAuthenticated} />}
+    <CartProvider>
+      <Router>
+        <div className="App">
+          <ToastContainer
+            position="top-right"
+            autoClose={2500}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            pauseOnHover
+            theme="dark"
           />
-          
+
+          <Routes>
+            {/* Root: Default to Admin Panel (or Login if not authenticated) */}
             <Route
               path="/"
-              element={isTokenValid() ? <Layout /> : <Navigate to="/login" />}
+              element={
+                <Navigate to={isTokenValid() ? "/admin/dashboard/" : "/login"} replace />
+              }
+            />
+
+            {/* Admin Login */}
+            <Route
+              path="/login"
+              element={<Login setIsAuthenticated={setIsAuthenticated} />}
+            />
+
+            {/* Admin Management Protected Routes */}
+            <Route
+              path="/admin"
+              element={isTokenValid() ? <Layout /> : <Navigate to="/login" replace />}
             >
-            <Route index path="/admin/dashboard/" element={<Dashboard />} />
-            <Route path="/admin/employees" element={<EmployeeManagement />} />
-            <Route path="/admin/customer" element={<CustomerManagement />} />
-            <Route path="/admin/order" element={<OrderManagement />} />
-            <Route path="/admin/salary" element={<SalaryManagement />} />
-            <Route path="/admin/bill" element={<BillGeneration />} />
-            <Route path="/admin/tax" element={<TaxManagement />} />
-            <Route path="/admin/invoice" element={<InvoiceManagement/>} />
-            <Route path="/admin/balancesheet" element={<BalanceSheet />} />
-          </Route>
-        </Routes>
-      </div>
-    </Router>
+              <Route index element={<Navigate to="/admin/dashboard/" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="dashboard/" element={<Dashboard />} />
+              <Route path="employees" element={<EmployeeManagement />} />
+              <Route path="customer" element={<CustomerManagement />} />
+              <Route path="order" element={<OrderManagement />} />
+              <Route path="salary" element={<SalaryManagement />} />
+              <Route path="bill" element={<BillGeneration />} />
+              <Route path="payment" element={<PaymentManagement />} />
+              <Route path="tax" element={<TaxManagement />} />
+              <Route path="invoice" element={<InvoiceManagement />} />
+              <Route path="balancesheet" element={<BalanceSheet />} />
+            </Route>
+
+            {/* Public Website Pages (available at /website, /home, /products, etc.) */}
+            <Route element={<WebsiteLayout />}>
+              <Route path="/website" element={<Home />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/cart" element={<CartPage />} />
+            </Route>
+
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/admin" replace />} />
+          </Routes>
+        </div>
+      </Router>
+    </CartProvider>
   );
 }
 
